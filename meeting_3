@@ -1,0 +1,23 @@
+Meeting date: 28 Feb 18
+Meeting time: 1400-1500
+
+Attendance:
+Alek, Aaron, Jeremiah (all present)
+
+Meeting summary:
+Discussed new project and what we need to do to catch up to speed. 
+
+Accomplished since last meeting:
+Since this is a new project, we are starting from a clean slate. No information is available for this required block>
+
+Accomplish before next meeting:
+Initial commit for the development branch, this will be expedited so all members can work on their individual pieces.<br>
+We will reuse the client/server communication and get a basic barebones client running, similar to what was necessary for
+the prototype. Simple graphics using Graphics2D in Java and potentiall adding placer sprites. 
+
+Individual issues:
+Aaron - On the server create game session class along with player class.
+Alek - Setup basic client ready for painting, create various game classes such as board and piece
+Jeremiah - Create menu with 3 buttons, Play vs AI, Play vs Player, and Exit
+
+
