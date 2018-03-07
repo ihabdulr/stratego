@@ -16,7 +16,11 @@ public class Images {
 
     public static void initialize() {
         loadImage("background_0.jpg");
-        loadImage("0.png");
+        loadImage("1.png");
+        loadImage("6.png");
+        loadImage("7.png");
+        loadImage("8.png");
+        loadImage("9.png");
         loadImage("wood.png");
         loadImage("stone.png");
     }

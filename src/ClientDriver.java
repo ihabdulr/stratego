@@ -25,6 +25,7 @@ public class ClientDriver extends JFrame {
         Board.setPiece(2, 6, new Piece(Piece.PieceType.GENERIC));
         Board.setPiece(3, 4, new Piece(Piece.PieceType.SCOUT));
         Board.setPiece(4, 4, new Piece(Piece.PieceType.SCOUT));
+        Board.setPiece(3, 5, new Piece(Piece.PieceType.KING));
         add(new SPanel());
         setTitle("Stratego 2442");
         pack();

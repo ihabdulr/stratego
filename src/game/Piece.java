@@ -1,5 +1,7 @@
 package game;
 
+import java.awt.*;
+
 /**
  * Created by Alek on 3/2/2018.
  */
@@ -9,7 +11,7 @@ public class Piece {
     //Generic is used for an enemy piece that we cant see
     //Block is used for part of the map that we cant move to
     public enum PieceType {
-        KING(1, 99), QUEEN(2, 99), SERGEANT(3, 99), PRIVATE(4, 99), SCOUT(5, 0), EMPTY(-1, 99), GENERIC(-1, 99), BLOCK(1, 99), BOMB(-1, 99);
+        KING(1, 1), QUEEN(2, 6), SERGEANT(7, 7), PRIVATE(8, 8), SCOUT(9, 9), EMPTY(-1, 99), GENERIC(-1, 99), BLOCK(1, 99), BOMB(-1, 99);
 
         int combatValue, spriteIndex;
 
@@ -29,6 +31,10 @@ public class Piece {
 
     private PieceType pieceType = PieceType.EMPTY;
     private int col, row;
+
+    public Rectangle getBounds(){
+        return new Rectangle(col * Board.TILE_SIZE, row * Board.TILE_SIZE, Board.TILE_SIZE, Board.TILE_SIZE);
+    }
 
     public Piece setPosition(int col, int row) {
         this.col = col;

@@ -1,7 +1,7 @@
 package client;
 
-import client.screens.GameBoard;
 import client.screens.MainMenu;
+import game.Board;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,7 +15,12 @@ import java.awt.event.*;
 
 public class SPanel extends JPanel implements ActionListener {
 
+    private MainMenu mainMenu;
+    private Board board;
+
     public SPanel() {
+        board = new Board();
+        mainMenu = new MainMenu();
         addKeyListener(new AAdapter());
         addMouseListener(new BAdapter());
         setFocusable(true);
@@ -33,13 +38,13 @@ public class SPanel extends JPanel implements ActionListener {
         super.paint(g);
         switch (Global.getGameState()) {
             case MENU:
-                MainMenu.paintScreen(g, this);
+                mainMenu.paintScreen(g, this);
                 break;
             case GAME:
-                GameBoard.paintScreen(g, this);
+                board.paintScreen(g, this);
                 break;
             default:
-                MainMenu.paintScreen(g, this);
+                mainMenu.paintScreen(g, this);
         }
         Toolkit.getDefaultToolkit().sync();
         g.dispose();
@@ -68,6 +73,16 @@ public class SPanel extends JPanel implements ActionListener {
         }
 
         public void mousePressed(MouseEvent e) {
+            switch (Global.getGameState()) {
+                case MENU:
+                    mainMenu.processEvent(e);
+                    break;
+                case GAME:
+                    board.processEvent(e);
+                    break;
+                default:
+                    board.processEvent(e);
+            }
 
         }
     }
