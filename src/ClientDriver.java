@@ -1,7 +1,11 @@
 import javax.swing.*;
 
+import client.Global;
 import client.Network;
 import client.SPanel;
+import client.resources.Images;
+import game.Board;
+import game.Piece;
 
 public class ClientDriver extends JFrame {
 
@@ -12,11 +16,19 @@ public class ClientDriver extends JFrame {
 
 
     public ClientDriver() {
+        Global.setGameState(Global.GameState.GAME);
+        Board.initialize();
+        Images.initialize();
+        Board.setPiece(0, 0, new Piece(Piece.PieceType.GENERIC));
+        Board.setPiece(1, 1, new Piece(Piece.PieceType.GENERIC));
+        Board.setPiece(0, 1, new Piece(Piece.PieceType.GENERIC));
+        Board.setPiece(2, 6, new Piece(Piece.PieceType.GENERIC));
+        Board.setPiece(3, 4, new Piece(Piece.PieceType.SCOUT));
+        Board.setPiece(4, 4, new Piece(Piece.PieceType.SCOUT));
         add(new SPanel());
         setTitle("Stratego 2442");
         pack();
         setResizable(false);
-        setLocationRelativeTo(null);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(1024, 768);
         setVisible(true);
@@ -25,10 +37,8 @@ public class ClientDriver extends JFrame {
 
     public static void main(String[] args) {
         //mainClient = new Network(PORT, SERVER);
-       new ClientDriver();
+        new ClientDriver();
     }
-        
-
 
 
 }

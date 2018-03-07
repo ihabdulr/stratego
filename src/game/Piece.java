@@ -8,28 +8,40 @@ public class Piece {
     //Empty is used for empty space
     //Generic is used for an enemy piece that we cant see
     //Block is used for part of the map that we cant move to
-    static enum PieceType {
-        KING(1), QUEEN(2), SERGEANT(3), PRIVATE(4), SCOUT(5), EMPTY(-1), GENERIC(-1), BLOCK(1), BOMB(-1);
+    public enum PieceType {
+        KING(1, 99), QUEEN(2, 99), SERGEANT(3, 99), PRIVATE(4, 99), SCOUT(5, 0), EMPTY(-1, 99), GENERIC(-1, 99), BLOCK(1, 99), BOMB(-1, 99);
 
-        int combatValue;
+        int combatValue, spriteIndex;
 
-        PieceType(int combatValue) {
+        PieceType(int combatValue, int spriteIndex) {
             this.combatValue = combatValue;
+            this.spriteIndex = spriteIndex;
         }
 
-        int getCombatValue() {
+        public int getCombatValue() {
             return combatValue;
+        }
+
+        public int getSpriteIndex () {
+            return spriteIndex;
         }
     }
 
-    private PieceType pieceType;
-    private int clientId; //? identifier for the client?
+    private PieceType pieceType = PieceType.EMPTY;
     private int col, row;
 
-    public Piece(PieceType pieceType, int col, int row) {
-        this.pieceType = pieceType;
+    public Piece setPosition(int col, int row) {
         this.col = col;
         this.row = row;
+        return this;
+    }
+
+    public void updateImage(String location) {
+
+    }
+
+    public Piece(PieceType pieceType) {
+        this.pieceType = pieceType;
     }
 
     public PieceType getPieceType() {

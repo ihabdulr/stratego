@@ -8,7 +8,7 @@ public class Board {
     public static final int SIZE_X = 8;
     public static final int SIZE_Y = 8;
 
-    Piece[][] pieces = new Piece[SIZE_X][SIZE_Y];
+    static Piece[][] pieces = new Piece[SIZE_X][SIZE_Y];
 
     public static enum Direction {
         UP(-1), DOWN(1), LEFT(-1), RIGHT(1);
@@ -23,20 +23,30 @@ public class Board {
         }
     }
 
-    public Piece getPiece(int col, int row) {
+    public static void initialize() {
+        for(int x = 0; x < SIZE_X; ++x)
+            for(int y = 0; y < SIZE_Y; ++y)
+                pieces[x][y] = new Piece(Piece.PieceType.EMPTY);
+    }
+
+    public static Piece getPiece(int col, int row) {
         return pieces[col][row];
+    }
+
+    public static void setPiece(int col, int row, Piece piece){
+        pieces[col][row] = piece.setPosition(col, row);
     }
 
     public void attack(Piece aPiece, Piece dPiece) {
 
         if(aPiece.getPieceType().getCombatValue() == dPiece.getPieceType().getCombatValue()) {
-            pieces[aPiece.getColumn()][aPiece.getRow()] = new Piece(Piece.PieceType.EMPTY, aPiece.getColumn(), aPiece.getRow());
-            pieces[dPiece.getColumn()][dPiece.getRow()] = new Piece(Piece.PieceType.EMPTY, dPiece.getColumn(), dPiece.getRow());
+            pieces[aPiece.getColumn()][aPiece.getRow()] = new Piece(Piece.PieceType.EMPTY);
+            pieces[dPiece.getColumn()][dPiece.getRow()] = new Piece(Piece.PieceType.EMPTY);
         } else if(aPiece.getPieceType().getCombatValue() < dPiece.getPieceType().getCombatValue()) {
-            pieces[aPiece.getColumn()][aPiece.getRow()] = new Piece(Piece.PieceType.EMPTY, aPiece.getColumn(), aPiece.getRow()); //move from old
+            pieces[aPiece.getColumn()][aPiece.getRow()] = new Piece(Piece.PieceType.EMPTY); //move from old
             pieces[dPiece.getColumn()][dPiece.getRow()] =  aPiece; //move to new
         } else {
-            pieces[aPiece.getColumn()][aPiece.getRow()] = new Piece(Piece.PieceType.EMPTY, aPiece.getColumn(), aPiece.getRow()); //remove from old
+            pieces[aPiece.getColumn()][aPiece.getRow()] = new Piece(Piece.PieceType.EMPTY); //remove from old
         }
     }
 

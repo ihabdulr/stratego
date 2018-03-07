@@ -1,5 +1,6 @@
 package client;
 
+import client.screens.GameBoard;
 import client.screens.MainMenu;
 
 import javax.swing.*;
@@ -33,6 +34,9 @@ public class SPanel extends JPanel implements ActionListener {
         switch (Global.getGameState()) {
             case MENU:
                 MainMenu.paintScreen(g, this);
+                break;
+            case GAME:
+                GameBoard.paintScreen(g, this);
                 break;
             default:
                 MainMenu.paintScreen(g, this);
