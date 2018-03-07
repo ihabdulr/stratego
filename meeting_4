@@ -1,0 +1,21 @@
+Meeting date: 07 Mar 18
+Meeting time: 1400-1500
+
+Attendance:
+Alek, Aaron, Jeremiah (all present)
+
+Meeting summary:
+Discussed UI setup and creating the multiplayer game session
+
+Accomplished since last meeting:
+Created the game board, pieces, image loading and display, and much of the basic game setup.
+
+Accomplish before next meeting:
+Finish the initial menu and start work on the "searching for game" screen on the menu. Create the game session 
+and the game state, whose turn it is. Client does not need to actually enter the game, but the framework
+for it needs to exist.
+
+Individual issues:
+Aaron - Game session containing both players, game state, and list of pieces for each player
+Alek - Continue client setup, show possible moves when you select a game board piece
+Jeremiah - Finish main menu functionality, start work or finish the searching for game menu
