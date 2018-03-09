@@ -1,11 +1,16 @@
 package game;
 
+import client.Global;
 import client.resources.Images;
 import client.screens.Screen;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.ImageObserver;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Alek on 3/2/2018.
@@ -15,6 +20,8 @@ public class Board implements Screen {
     public static final int SIZE_X = 8;
     public static final int SIZE_Y = 8;
     public static final int TILE_SIZE = 64;
+
+    private static Piece selectedPiece = null;
 
     static Piece[][] pieces = new Piece[SIZE_X][SIZE_Y];
 
@@ -58,39 +65,56 @@ public class Board implements Screen {
         }
     }
 
-    public boolean canMove(Piece piece, Direction dir) {
-        int dx = piece.getColumn();
-        int dy = piece.getRow();
-        if (dir.equals(Direction.UP) || dir.equals(Direction.DOWN))
-            dy = dy + dir.getOffset();
-        else if (dir.equals(Direction.LEFT) || dir.equals(Direction.RIGHT))
-            dx = dx + dir.getOffset();
-
-        int distance = (int) Math.sqrt(Math.pow(dx - piece.getColumn(), 2) + Math.pow(dy - piece.getRow(), 2));
-
-        if (distance == 0 || distance > piece.getMaxDistance())
-            return false;
-
-        if (dx < 0 || dx > SIZE_X - 1 || dy < 0 || dy > SIZE_Y - 1)
-            return false;
-
-        Piece.PieceType destType = getPiece(dx, dy).getPieceType();
-
-        return !destType.equals(Piece.PieceType.BLOCK) && (destType.equals(Piece.PieceType.EMPTY) || destType.equals(Piece.PieceType.GENERIC));
-
+    private java.util.List<Piece> getMovableTiles(Piece piece) {
+        java.util.List<Piece> pieces = new ArrayList<Piece>();
+        if(piece != null) {
+            int mx = piece.getColumn();
+            int my = piece.getRow();
+            for(Direction dir : Direction.values()) {
+                if (dir.equals(Direction.UP) || dir.equals(Direction.DOWN)) {
+                    for(int i = 0; i < piece.getMaxDistance(); ++i) {
+                        int dx = mx;
+                        int dy = my + (dir.getOffset() * (i + 1));
+                        if(dy >= 0 && dy < SIZE_Y)
+                            pieces.add(getPiece(dx, dy));
+                    }
+                }
+                else if (dir.equals(Direction.LEFT) || dir.equals(Direction.RIGHT)) {
+                        for(int i = 0; i < piece.getMaxDistance(); ++i) {
+                            int dx = mx + (dir.getOffset() * (i + 1));
+                            int dy = my;
+                            if(dx >= 0 && dx < SIZE_X)
+                                pieces.add(getPiece(dx, dy));
+                        }
+                }
+            }
+        }
+        pieces.removeAll(pieces.stream().filter(p ->
+                !p.getPieceType().equals(Piece.PieceType.EMPTY) &&
+                        !p.getPieceType().equals(Piece.PieceType.GENERIC)
+        ).collect(Collectors.toList()));
+        return pieces;
     }
 
+
     public void processEvent(MouseEvent e) {
-        for (int x = 0; x < SIZE_X; ++x)
-            for (int y = 0; y < Board.SIZE_Y; ++y)
-                if (getPiece(x, y).getBounds().contains(e.getPoint())) {
-                    System.out.println("We clicked on a board piece");
+        Stream.of(pieces).flatMap(Stream::of).forEach(i -> {
+            if (i.getBounds().contains(e.getPoint())) {
+                if (i.getPieceType().isSelectable()) {
+                    if (!i.equals(selectedPiece)) {
+                        selectedPiece = i;
+                    } else {
+                        selectedPiece = null;
+                    }
                 }
+            }
+        });
     }
 
     public void paintScreen(Graphics g, ImageObserver o) {
         Graphics2D g2d = (Graphics2D) g;
         g.drawImage(Images.getImage("background_0"), 0, 0, o);
+        java.util.List<Piece> pieces = getMovableTiles(selectedPiece);
         g2d.setColor(Color.WHITE);
         for (int x = 0; x < Board.SIZE_X; ++x) {
             for (int y = 0; y < Board.SIZE_Y; ++y) {
@@ -109,7 +133,18 @@ public class Board implements Screen {
                         g.drawString(String.valueOf(piece.getPieceType().getCombatValue()), xOffset + (TILE_SIZE - 9), yOffset + (TILE_SIZE - 9));
                     }
                 }
-                g2d.drawRect(xOffset, yOffset, TILE_SIZE, TILE_SIZE);
+                if (piece.equals(selectedPiece)) {
+                    g.setColor(Color.GREEN);
+                    g.drawRect(xOffset, yOffset, TILE_SIZE - 2, TILE_SIZE - 2);
+                    g.drawRect(xOffset + 1, yOffset + 1, TILE_SIZE - 2, TILE_SIZE - 2);
+                } else {
+                    g2d.setColor(Color.WHITE);
+                    g2d.drawRect(xOffset, yOffset, TILE_SIZE, TILE_SIZE);
+                }
+                if(pieces.contains(piece)) {
+                    g.setColor(new Color(0, 155, 0, 128));
+                    g.fillRect(xOffset, yOffset, TILE_SIZE, TILE_SIZE);
+                }
             }
         }
     }
