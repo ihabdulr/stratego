@@ -23,6 +23,7 @@ public class Images {
         loadImage("9.png");
         loadImage("wood.png");
         loadImage("stone.png");
+        loadImage("closeicon.png");
     }
 
     public static Image getImage(String name) {

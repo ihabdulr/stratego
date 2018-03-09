@@ -16,7 +16,7 @@ public class ClientDriver extends JFrame {
 
 
     public ClientDriver() {
-        Global.setGameState(Global.GameState.GAME);
+      //  Global.setGameState(Global.GameState.GAME);
         Board.initialize();
         Images.initialize();
         Board.setPiece(0, 0, new Piece(Piece.PieceType.GENERIC));

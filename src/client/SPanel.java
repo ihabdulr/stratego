@@ -83,7 +83,7 @@ public class SPanel extends JPanel implements ActionListener {
                 default:
                     board.processEvent(e);
             }
-
+            	repaint();
         }
     }
 
