@@ -1,6 +1,5 @@
 package game;
 
-import client.Global;
 import client.resources.Images;
 import client.screens.Screen;
 
@@ -8,8 +7,6 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.ImageObserver;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -25,7 +22,7 @@ public class Board implements Screen {
 
     static Piece[][] pieces = new Piece[SIZE_X][SIZE_Y];
 
-    public static enum Direction {
+    public enum Direction {
         UP(-1), DOWN(1), LEFT(-1), RIGHT(1);
         int offset;
 
@@ -65,6 +62,9 @@ public class Board implements Screen {
         }
     }
 
+
+
+
     private java.util.List<Piece> getMovableTiles(Piece piece) {
         java.util.List<Piece> pieces = new ArrayList<Piece>();
         if(piece != null) {
@@ -75,24 +75,33 @@ public class Board implements Screen {
                     for(int i = 0; i < piece.getMaxDistance(); ++i) {
                         int dx = mx;
                         int dy = my + (dir.getOffset() * (i + 1));
-                        if(dy >= 0 && dy < SIZE_Y)
-                            pieces.add(getPiece(dx, dy));
+                        if(dy >= 0 && dy < SIZE_Y) {
+                            Piece p = getPiece(dx, dy);
+                            if(!p.getPieceType().equals(Piece.PieceType.EMPTY) &&
+                                    !p.getPieceType().equals(Piece.PieceType.GENERIC)) {
+                                break;
+                            }
+                            pieces.add(p);
+                        }
                     }
                 }
                 else if (dir.equals(Direction.LEFT) || dir.equals(Direction.RIGHT)) {
                         for(int i = 0; i < piece.getMaxDistance(); ++i) {
                             int dx = mx + (dir.getOffset() * (i + 1));
                             int dy = my;
-                            if(dx >= 0 && dx < SIZE_X)
-                                pieces.add(getPiece(dx, dy));
+                            if(dx >= 0 && dx < SIZE_X) {
+                                Piece p = getPiece(dx, dy);
+                                if(!p.getPieceType().equals(Piece.PieceType.EMPTY) &&
+                                        !p.getPieceType().equals(Piece.PieceType.GENERIC)) {
+                                    break;
+                                }
+                                pieces.add(p);
+                            }
+
                         }
                 }
             }
         }
-        pieces.removeAll(pieces.stream().filter(p ->
-                !p.getPieceType().equals(Piece.PieceType.EMPTY) &&
-                        !p.getPieceType().equals(Piece.PieceType.GENERIC)
-        ).collect(Collectors.toList()));
         return pieces;
     }
 
@@ -101,10 +110,12 @@ public class Board implements Screen {
         Stream.of(pieces).flatMap(Stream::of).forEach(i -> {
             if (i.getBounds().contains(e.getPoint())) {
                 if (i.getPieceType().isSelectable()) {
-                    if (!i.equals(selectedPiece)) {
+                    if(selectedPiece == null) {
                         selectedPiece = i;
-                    } else {
+                    } else if(selectedPiece.equals(i)) {
                         selectedPiece = null;
+                    } else if(getMovableTiles(selectedPiece).contains(i)) {
+                       //Move player
                     }
                 }
             }
