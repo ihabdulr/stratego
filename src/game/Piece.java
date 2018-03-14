@@ -51,8 +51,19 @@ public class Piece {
         return this;
     }
 
-    public void updateImage(String location) {
+    public Piece setPosition(Point point) {
+        this.col = point.x;
+        this.row = point.y;
+        return this;
+    }
 
+    public Piece clone() {
+        return new Piece(pieceType).setPosition(this.getPosition());
+    }
+
+    //used to securely clone a piece without exposing
+    public Piece clone(PieceType piece) {
+        return new Piece(piece).setPosition(this.getPosition());
     }
 
     public Piece(PieceType pieceType) {
@@ -69,6 +80,10 @@ public class Piece {
 
     public int getRow() {
         return row;
+    }
+
+    public Point getPosition() {
+        return new Point(col, row);
     }
 
     public int getMaxDistance() {

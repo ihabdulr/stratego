@@ -7,6 +7,8 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.ImageObserver;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
 /**
@@ -19,6 +21,9 @@ public class Board implements Screen {
     public static final int TILE_SIZE = 64;
 
     private static Piece selectedPiece = null;
+
+    private static Map<Piece.PieceType, Integer> capturedPieces = new HashMap<>();
+    private static Map<Piece.PieceType, Integer> lostPieces = new HashMap<>();
 
     static Piece[][] pieces = new Piece[SIZE_X][SIZE_Y];
 
@@ -38,7 +43,7 @@ public class Board implements Screen {
     public static void initialize() {
         for (int x = 0; x < SIZE_X; ++x)
             for (int y = 0; y < SIZE_Y; ++y)
-                pieces[x][y] = new Piece(Piece.PieceType.EMPTY);
+                pieces[x][y] = new Piece(Piece.PieceType.EMPTY).setPosition(x, y);
     }
 
     public static Piece getPiece(int col, int row) {
@@ -49,17 +54,71 @@ public class Board implements Screen {
         pieces[col][row] = piece.setPosition(col, row);
     }
 
-    public void attack(Piece aPiece, Piece dPiece) {
+    //Moves a piece, placing an empty piece in the old location
+    public void movePiece(Piece piece, Piece dest) {
+        pieces[dest.getColumn()][dest.getRow()] = piece.clone().setPosition(dest.getPosition());
+        pieces[piece.getColumn()][piece.getRow()] = dest.clone().setPosition(piece.getPosition());
+    }
 
-        if (aPiece.getPieceType().getCombatValue() == dPiece.getPieceType().getCombatValue()) {
-            pieces[aPiece.getColumn()][aPiece.getRow()] = new Piece(Piece.PieceType.EMPTY);
-            pieces[dPiece.getColumn()][dPiece.getRow()] = new Piece(Piece.PieceType.EMPTY);
-        } else if (aPiece.getPieceType().getCombatValue() < dPiece.getPieceType().getCombatValue()) {
-            pieces[aPiece.getColumn()][aPiece.getRow()] = new Piece(Piece.PieceType.EMPTY); //move from old
-            pieces[dPiece.getColumn()][dPiece.getRow()] = aPiece; //move to new
+    private void addCapturedPiece(Piece.PieceType pieceType) {
+        System.out.println("Captured " + pieceType);
+        if(!capturedPieces.containsKey(pieceType)) {
+            capturedPieces.put(pieceType, 1);
         } else {
-            pieces[aPiece.getColumn()][aPiece.getRow()] = new Piece(Piece.PieceType.EMPTY); //remove from old
+            capturedPieces.replace(pieceType, capturedPieces.get(pieceType) + 1);
         }
+    }
+
+    private void addLostPiece(Piece.PieceType pieceType) {
+        System.out.println("Lost " + pieceType);
+        if(!lostPieces.containsKey(pieceType)) {
+            lostPieces.put(pieceType, 1);
+        } else {
+            lostPieces.replace(pieceType, lostPieces.get(pieceType) + 1);
+        }
+    }
+
+    public void attack(Piece aPiece, Piece dPiece) {
+        //TODO play animation here
+        if (aPiece.getPieceType().getCombatValue() == dPiece.getPieceType().getCombatValue()) {
+            pieces[aPiece.getColumn()][aPiece.getRow()] = new Piece(Piece.PieceType.EMPTY).setPosition(aPiece.getPosition());
+            pieces[dPiece.getColumn()][dPiece.getRow()] = new Piece(Piece.PieceType.EMPTY).setPosition(dPiece.getPosition());
+            addCapturedPiece(dPiece.getPieceType());
+            addLostPiece(aPiece.getPieceType());
+        } else if (aPiece.getPieceType().getCombatValue() > dPiece.getPieceType().getCombatValue()) {
+            pieces[aPiece.getColumn()][aPiece.getRow()] = new Piece(Piece.PieceType.EMPTY).setPosition(aPiece.getPosition());
+            addLostPiece(aPiece.getPieceType());
+        } else {
+            pieces[dPiece.getColumn()][dPiece.getRow()] = aPiece.clone().setPosition(dPiece.getPosition());
+            pieces[aPiece.getColumn()][aPiece.getRow()] = new Piece(Piece.PieceType.EMPTY).setPosition(aPiece.getPosition());
+            addCapturedPiece(dPiece.getPieceType());
+        }
+    }
+
+    //Requests from server or game logic to reveal generic piece
+    public Piece.PieceType requestPiece(Piece p) {
+        //For now, just return mid-tier piece
+        return Piece.PieceType.SERGEANT;
+    }
+
+    public boolean move(Piece start, Piece end) {
+        java.util.List<Piece> available = getMovableTiles(start);
+        if (!available.contains(end))
+            return false;
+
+        //simple swap
+        if (end.getPieceType().equals(Piece.PieceType.EMPTY)) {
+            movePiece(start, end);
+            selectedPiece = null;
+            return true;
+        }
+
+        if(end.getPieceType().equals(Piece.PieceType.GENERIC)) {
+            attack(start, end.clone(requestPiece(end)));
+            selectedPiece = null;
+        }
+
+        return false;
     }
 
 
@@ -97,9 +156,10 @@ public class Board implements Screen {
                         selectedPiece = i;
                     } else if (selectedPiece.equals(i)) {
                         selectedPiece = null;
-                    } else if (getMovableTiles(selectedPiece).contains(i)) {
-                        //Move player
                     }
+                } else if (selectedPiece != null) {
+                    e.consume();
+                    move(selectedPiece, i);
                 }
             }
         });
