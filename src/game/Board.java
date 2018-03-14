@@ -63,42 +63,25 @@ public class Board implements Screen {
     }
 
 
-
-
     private java.util.List<Piece> getMovableTiles(Piece piece) {
         java.util.List<Piece> pieces = new ArrayList<Piece>();
-        if(piece != null) {
+        if (piece != null) {
             int mx = piece.getColumn();
             int my = piece.getRow();
-            for(Direction dir : Direction.values()) {
-                if (dir.equals(Direction.UP) || dir.equals(Direction.DOWN)) {
-                    for(int i = 0; i < piece.getMaxDistance(); ++i) {
-                        int dx = mx;
-                        int dy = my + (dir.getOffset() * (i + 1));
-                        if(dy >= 0 && dy < SIZE_Y) {
-                            Piece p = getPiece(dx, dy);
-                            if(!p.getPieceType().equals(Piece.PieceType.EMPTY) &&
-                                    !p.getPieceType().equals(Piece.PieceType.GENERIC)) {
-                                break;
-                            }
-                            pieces.add(p);
-                        }
-                    }
-                }
-                else if (dir.equals(Direction.LEFT) || dir.equals(Direction.RIGHT)) {
-                        for(int i = 0; i < piece.getMaxDistance(); ++i) {
-                            int dx = mx + (dir.getOffset() * (i + 1));
-                            int dy = my;
-                            if(dx >= 0 && dx < SIZE_X) {
-                                Piece p = getPiece(dx, dy);
-                                if(!p.getPieceType().equals(Piece.PieceType.EMPTY) &&
-                                        !p.getPieceType().equals(Piece.PieceType.GENERIC)) {
-                                    break;
-                                }
-                                pieces.add(p);
-                            }
+            for (Direction dir : Direction.values()) {
+                for (int i = 0; i < piece.getMaxDistance(); ++i) {
+                    int dx = dir.equals(Direction.LEFT) || dir.equals(Direction.RIGHT) ? mx + (dir.getOffset() * (i + 1)) : mx;
+                    int dy = dir.equals(Direction.UP) || dir.equals(Direction.DOWN) ? my + (dir.getOffset() * (i + 1)) : my;
+                    if (dx >= 0 && dy >= 0 && dx < SIZE_X && dy < SIZE_Y) {
+                        Piece p = getPiece(dx, dy);
 
-                        }
+                        if (p.getPieceType().equals(Piece.PieceType.EMPTY) || p.getPieceType().equals(Piece.PieceType.GENERIC))
+                            pieces.add(p);
+
+                        if (!p.getPieceType().equals(Piece.PieceType.EMPTY))
+                            break;
+                    }
+
                 }
             }
         }
@@ -110,12 +93,12 @@ public class Board implements Screen {
         Stream.of(pieces).flatMap(Stream::of).forEach(i -> {
             if (i.getBounds().contains(e.getPoint())) {
                 if (i.getPieceType().isSelectable()) {
-                    if(selectedPiece == null) {
+                    if (selectedPiece == null) {
                         selectedPiece = i;
-                    } else if(selectedPiece.equals(i)) {
+                    } else if (selectedPiece.equals(i)) {
                         selectedPiece = null;
-                    } else if(getMovableTiles(selectedPiece).contains(i)) {
-                       //Move player
+                    } else if (getMovableTiles(selectedPiece).contains(i)) {
+                        //Move player
                     }
                 }
             }
@@ -145,15 +128,21 @@ public class Board implements Screen {
                     }
                 }
                 if (piece.equals(selectedPiece)) {
-                    g.setColor(Color.GREEN);
+                    if (piece.getPieceType().equals(Piece.PieceType.EMPTY))
+                        g.setColor(Color.GREEN);
+                    else
+                        g.setColor(Color.RED);
                     g.drawRect(xOffset, yOffset, TILE_SIZE - 2, TILE_SIZE - 2);
                     g.drawRect(xOffset + 1, yOffset + 1, TILE_SIZE - 2, TILE_SIZE - 2);
                 } else {
                     g2d.setColor(Color.WHITE);
                     g2d.drawRect(xOffset, yOffset, TILE_SIZE, TILE_SIZE);
                 }
-                if(pieces.contains(piece)) {
-                    g.setColor(new Color(0, 155, 0, 128));
+                if (pieces.contains(piece)) {
+                    if (piece.getPieceType().equals(Piece.PieceType.EMPTY))
+                        g.setColor(new Color(0, 155, 0, 128));
+                    else
+                        g.setColor(new Color(155, 0, 0, 128));
                     g.fillRect(xOffset, yOffset, TILE_SIZE, TILE_SIZE);
                 }
             }
