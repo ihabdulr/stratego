@@ -16,6 +16,10 @@ public class MainMenu implements Screen {
     public MenuButton button_quit = new MenuButton("Quit", 400, 500, 200, 50);
     public MenuButton buttonPressed = null;
 
+     public void processMouseMovedEvent(MouseEvent e) {
+
+    }
+
     public void paintScreen(Graphics g, ImageObserver o) {
 
         Graphics2D g2d = (Graphics2D) g;
@@ -52,7 +56,7 @@ public class MainMenu implements Screen {
 
     }
 
-    public void processEvent(MouseEvent e) {
+    public void processMousePressedEvent(MouseEvent e) {
         //vs Player buttton
         if (button_pvp.getBounds().contains(e.getPoint()) && (buttonPressed == null || buttonPressed == button_pvp)) {
             //Global.setGameState(GameState.GAME);

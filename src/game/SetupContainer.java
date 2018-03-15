@@ -33,7 +33,7 @@ public class SetupContainer extends Rectangle {
     private int trueWidth, trueHeight, tileWidth, tileHeight;
     private int tileXOffset, tileYOffset;
     private java.util.List<SetupTile> setupTiles = new ArrayList<>();
-    private Piece.PieceType[] gamePieces = {
+    public final static Piece.PieceType[] GAME_PIECES = {
             Piece.PieceType.SCOUT, Piece.PieceType.SCOUT, Piece.PieceType.SCOUT, Piece.PieceType.SCOUT, Piece.PieceType.SCOUT, Piece.PieceType.SCOUT,
             Piece.PieceType.SCOUT, Piece.PieceType.SCOUT, Piece.PieceType.SCOUT, Piece.PieceType.SCOUT, Piece.PieceType.SCOUT, Piece.PieceType.SCOUT,
             Piece.PieceType.PRIVATE, Piece.PieceType.PRIVATE, Piece.PieceType.PRIVATE, Piece.PieceType.PRIVATE, Piece.PieceType.PRIVATE, Piece.PieceType.PRIVATE,
@@ -48,10 +48,18 @@ public class SetupContainer extends Rectangle {
         tileHeight = trueHeight / 2;
         tileXOffset = ((tileWidth - 64) / 2);
         tileYOffset = ((tileHeight - 64) / 2);
+        initialize();
+    }
+
+    public void clear() {
+        setupTiles.clear();
+    }
+
+    public void initialize() {
         for (int i = 0; i < 24; ++i) {
             int ax = (i < 12 ? i * tileWidth : (i - 12) * tileWidth) + x;
             int ay = (i < 12 ? 0 : tileHeight) + y;
-            setupTiles.add(new SetupTile(ax, ay, tileWidth, tileHeight).setType(gamePieces[i]));
+            setupTiles.add(new SetupTile(ax, ay, tileWidth, tileHeight).setType(GAME_PIECES[i]));
         }
     }
 

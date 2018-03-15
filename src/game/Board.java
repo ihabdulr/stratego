@@ -7,9 +7,7 @@ import client.screens.Screen;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.ImageObserver;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -23,13 +21,25 @@ public class Board implements Screen {
 
     private static Piece selectedPiece = null;
     private static SetupContainer.SetupTile selectedTile = null;
+    private static BoardButton selectedButton = null;
 
     private Font titleFont = new Font("Sans-Serif", Font.BOLD, 16);
     private Color blackTransparent = new Color(0, 0, 0, 128);
+    private Color whiteTransparent = new Color(192, 192, 192, 128);
     private Color greenTransparent = new Color(0, 155, 0, 128);
     private Color redTransparent = new Color(155, 0, 0, 128);
     private Color yellowTransparent = new Color(155, 155, 0, 128);
     private Color yellowTransparent2 = new Color(155, 155, 0, 64);
+
+    private BoardButton autoFillButton = new BoardButton((Global.WIDTH / 2) + 32, 40, (Global.WIDTH / 2) - 64, 48, "Auto-Fill");
+    private BoardButton clearButton = new BoardButton((Global.WIDTH / 2) + 32, 136, (Global.WIDTH / 2) - 64, 48, "Clear Board");
+    private BoardButton loadButton = new BoardButton((Global.WIDTH / 2) + 32, 232, (Global.WIDTH / 2) - 64, 48, "Load Setup");
+    private BoardButton saveButton = new BoardButton((Global.WIDTH / 2) + 32, 328, (Global.WIDTH / 2) - 64, 48, "Save Setup");
+    private BoardButton readyButton = new BoardButton((Global.WIDTH / 2) + 32, 424, (Global.WIDTH / 2) - 64, 48, "Ready");
+
+    private java.util.List<BoardButton> setupButtons = Arrays.asList(
+            autoFillButton, clearButton, readyButton.setEnabled(false),
+            loadButton, saveButton);
 
     private static Map<Piece.PieceType, Integer> capturedPieces = new HashMap<>();
     private static Map<Piece.PieceType, Integer> lostPieces = new HashMap<>();
@@ -55,6 +65,19 @@ public class Board implements Screen {
         for (int x = 0; x < SIZE_X; ++x)
             for (int y = 0; y < SIZE_Y; ++y)
                 pieces[x][y] = new Piece(Piece.PieceType.EMPTY).setPosition(x, y);
+    }
+
+    private void autoFillBoard() {
+        initialize();
+        setupContainer.clear();
+        int flatIndex = 0;
+        for(int x = 0; x < SIZE_X; ++x) {
+            for(int y = 5; y < SIZE_Y; ++y) {
+                pieces[x][y] = new Piece(SetupContainer.GAME_PIECES[flatIndex]).setPosition(x, y);
+                ++flatIndex;
+            }
+        }
+        readyButton.setEnabled(true);
     }
 
     public static Piece getPiece(int col, int row) {
@@ -159,7 +182,7 @@ public class Board implements Screen {
     }
 
 
-    public void processEvent(MouseEvent e) {
+    public void processMousePressedEvent(MouseEvent e) {
         Stream.of(pieces).flatMap(Stream::of).forEach(i -> {
             if (i.getBounds().contains(e.getPoint())) {
                 if (Global.getBoardState().equals(Global.BoardState.MY_TURN)) {
@@ -181,7 +204,7 @@ public class Board implements Screen {
                             selectedTile = null;
                             if (setupContainer.getSetupTiles().isEmpty()) {
                                 //TODO tell the server that we're done setting up
-                                Global.setBoardState(Global.BoardState.MY_TURN);
+                                setupButtons.get(setupButtons.indexOf(readyButton)).setEnabled(true);
                             }
                         }
                     }
@@ -199,8 +222,36 @@ public class Board implements Screen {
                     }
                 }
             }
+            for (BoardButton button : setupButtons) {
+                if (button.getBounds().contains(e.getPoint()) && button.isEnabled()) {
+                    if(button.equals(readyButton)) {
+                        Global.setBoardState(Global.BoardState.MY_TURN);
+                    } else if(button.equals(clearButton)) {
+                        initialize();
+                        setupContainer.initialize();
+                        autoFillButton.setEnabled(true);
+                        readyButton.setEnabled(false);
+                    } else if(button.equals(autoFillButton)) {
+                        autoFillBoard();
+                        autoFillButton.setEnabled(false);
+                        readyButton.setEnabled(true);
+                    }
+                }
+            }
         }
 
+    }
+
+    public void processMouseMovedEvent(MouseEvent e) {
+        if (Global.getBoardState().equals(Global.BoardState.SETUP)) {
+            for (BoardButton button : setupButtons) {
+                if (button.getBounds().contains(e.getPoint())) {
+                    button.setHighlighted(true);
+                } else {
+                    button.setHighlighted(false);
+                }
+            }
+        }
     }
 
     public void paintScreen(Graphics g, ImageObserver o) {
@@ -267,6 +318,19 @@ public class Board implements Screen {
                 }
                 g.drawImage(Images.getImage(String.valueOf(tile.getType().getSpriteIndex())),
                         tile.x + setupContainer.getTileXOffset(), tile.y + setupContainer.getTileYOffset(), o);
+            }
+            for (BoardButton button : setupButtons) {
+                if (button.isHighlighted())
+                    g.setColor(whiteTransparent);
+                else
+                    g.setColor(blackTransparent);
+                g.fillRect(button.x, button.y, button.width, button.height);
+                button.setFontMetrics(g.getFontMetrics(titleFont));
+                if (button.isEnabled())
+                    g.setColor(Color.YELLOW);
+                else
+                    g.setColor(Color.RED);
+                g.drawString(button.getString(), button.getStringX(), button.getStringY());
             }
 
         }

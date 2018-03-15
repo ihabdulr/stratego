@@ -10,5 +10,6 @@ import java.awt.image.ImageObserver;
 public interface Screen {
 
     void paintScreen(Graphics g, ImageObserver o);
-    void processEvent(MouseEvent e);
+    void processMousePressedEvent(MouseEvent e);
+    void processMouseMovedEvent(MouseEvent e);
 }
