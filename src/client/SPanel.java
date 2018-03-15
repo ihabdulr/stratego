@@ -22,7 +22,10 @@ public class SPanel extends JPanel implements ActionListener {
         board = new Board();
         mainMenu = new MainMenu();
         addKeyListener(new AAdapter());
-        addMouseListener(new BAdapter());
+        BAdapter b = new BAdapter();
+        addMouseListener(b);
+        addMouseMotionListener(b);
+
         setFocusable(true);
         setBackground(Color.BLACK);
         setDoubleBuffered(true);
@@ -70,20 +73,35 @@ public class SPanel extends JPanel implements ActionListener {
 
         public void mouseClicked(MouseEvent e) {
 
+
+        }
+
+        public void mouseMoved(MouseEvent e){
+            switch (Global.getGameState()) {
+                case MENU:
+                    mainMenu.processMouseMovedEvent(e);
+                    break;
+                case GAME:
+                    board.processMouseMovedEvent(e);
+                    break;
+                default:
+                    board.processMouseMovedEvent(e);
+            }
+            repaint();
         }
 
         public void mousePressed(MouseEvent e) {
             switch (Global.getGameState()) {
                 case MENU:
-                    mainMenu.processEvent(e);
+                    mainMenu.processMousePressedEvent(e);
                     break;
                 case GAME:
-                    board.processEvent(e);
+                    board.processMousePressedEvent(e);
                     break;
                 default:
-                    board.processEvent(e);
+                    board.processMousePressedEvent(e);
             }
-
+            	repaint();
         }
     }
 
