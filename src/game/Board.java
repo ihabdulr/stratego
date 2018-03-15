@@ -44,6 +44,17 @@ public class Board implements Screen {
     private static Map<Piece.PieceType, Integer> capturedPieces = new HashMap<>();
     private static Map<Piece.PieceType, Integer> lostPieces = new HashMap<>();
 
+
+
+    public static void setPieces(Piece[][] newPieces) {
+        pieces = newPieces;
+    }
+
+    public static Piece[][] getPieces() {
+        return pieces;
+    }
+
+
     private SetupContainer setupContainer = new SetupContainer(15, 64 * SIZE_Y + 48, Global.WIDTH - 31, 160);
 
     static Piece[][] pieces = new Piece[SIZE_X][SIZE_Y];
