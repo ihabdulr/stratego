@@ -56,6 +56,7 @@ public class SetupContainer extends Rectangle {
     }
 
     public void initialize() {
+        clear();
         for (int i = 0; i < 24; ++i) {
             int ax = (i < 12 ? i * tileWidth : (i - 12) * tileWidth) + x;
             int ay = (i < 12 ? 0 : tileHeight) + y;
