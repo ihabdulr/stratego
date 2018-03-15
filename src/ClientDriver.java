@@ -15,23 +15,23 @@ public class ClientDriver extends JFrame {
     public static Network mainClient;
 
 
+
     public ClientDriver() {
       //  Global.setGameState(Global.GameState.GAME);
+        Global.setBoardState(Global.BoardState.SETUP);
         Board.initialize();
         Images.initialize();
         Board.setPiece(0, 0, new Piece(Piece.PieceType.GENERIC));
         Board.setPiece(1, 1, new Piece(Piece.PieceType.GENERIC));
         Board.setPiece(0, 1, new Piece(Piece.PieceType.GENERIC));
-        Board.setPiece(2, 6, new Piece(Piece.PieceType.GENERIC));
-        Board.setPiece(2, 4, new Piece(Piece.PieceType.SCOUT));
-        Board.setPiece(4, 4, new Piece(Piece.PieceType.SCOUT));
-        Board.setPiece(3, 5, new Piece(Piece.PieceType.KING));
+        Board.setPiece(2, 3, new Piece(Piece.PieceType.GENERIC));
+
         add(new SPanel());
         setTitle("Stratego 2442");
         pack();
         setResizable(false);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setSize(1024, 768);
+        setSize(Global.WIDTH, Global.HEIGHT);
         setVisible(true);
 
     }

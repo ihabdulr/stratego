@@ -1,5 +1,6 @@
 package game;
 
+import client.Global;
 import client.resources.Images;
 import client.screens.Screen;
 
@@ -21,9 +22,19 @@ public class Board implements Screen {
     public static final int TILE_SIZE = 64;
 
     private static Piece selectedPiece = null;
+    private static SetupContainer.SetupTile selectedTile = null;
+
+    private Font titleFont = new Font("Sans-Serif", Font.BOLD, 16);
+    private Color blackTransparent = new Color(0, 0, 0, 128);
+    private Color greenTransparent = new Color(0, 155, 0, 128);
+    private Color redTransparent = new Color(155, 0, 0, 128);
+    private Color yellowTransparent = new Color(155, 155, 0, 128);
+    private Color yellowTransparent2 = new Color(155, 155, 0, 64);
 
     private static Map<Piece.PieceType, Integer> capturedPieces = new HashMap<>();
     private static Map<Piece.PieceType, Integer> lostPieces = new HashMap<>();
+
+    private SetupContainer setupContainer = new SetupContainer(15, 64 * SIZE_Y + 48, Global.WIDTH - 31, 160);
 
     static Piece[][] pieces = new Piece[SIZE_X][SIZE_Y];
 
@@ -62,7 +73,7 @@ public class Board implements Screen {
 
     private void addCapturedPiece(Piece.PieceType pieceType) {
         System.out.println("Captured " + pieceType);
-        if(!capturedPieces.containsKey(pieceType)) {
+        if (!capturedPieces.containsKey(pieceType)) {
             capturedPieces.put(pieceType, 1);
         } else {
             capturedPieces.replace(pieceType, capturedPieces.get(pieceType) + 1);
@@ -71,7 +82,7 @@ public class Board implements Screen {
 
     private void addLostPiece(Piece.PieceType pieceType) {
         System.out.println("Lost " + pieceType);
-        if(!lostPieces.containsKey(pieceType)) {
+        if (!lostPieces.containsKey(pieceType)) {
             lostPieces.put(pieceType, 1);
         } else {
             lostPieces.replace(pieceType, lostPieces.get(pieceType) + 1);
@@ -113,7 +124,7 @@ public class Board implements Screen {
             return true;
         }
 
-        if(end.getPieceType().equals(Piece.PieceType.GENERIC)) {
+        if (end.getPieceType().equals(Piece.PieceType.GENERIC)) {
             attack(start, end.clone(requestPiece(end)));
             selectedPiece = null;
         }
@@ -151,18 +162,45 @@ public class Board implements Screen {
     public void processEvent(MouseEvent e) {
         Stream.of(pieces).flatMap(Stream::of).forEach(i -> {
             if (i.getBounds().contains(e.getPoint())) {
-                if (i.getPieceType().isSelectable()) {
-                    if (selectedPiece == null) {
-                        selectedPiece = i;
-                    } else if (selectedPiece.equals(i)) {
-                        selectedPiece = null;
+                if (Global.getBoardState().equals(Global.BoardState.MY_TURN)) {
+                    if (i.getPieceType().isSelectable()) {
+                        if (selectedPiece == null) {
+                            selectedPiece = i;
+                        } else if (selectedPiece.equals(i)) {
+                            selectedPiece = null;
+                        }
+                    } else if (selectedPiece != null) {
+                        e.consume();
+                        move(selectedPiece, i);
                     }
-                } else if (selectedPiece != null) {
-                    e.consume();
-                    move(selectedPiece, i);
+                } else if (Global.getBoardState().equals(Global.BoardState.SETUP)) {
+                    if (selectedTile != null) {
+                        if (i.getPieceType().equals(Piece.PieceType.EMPTY)) {
+                            pieces[i.getColumn()][i.getRow()] = new Piece(selectedTile.getType()).setPosition(i.getColumn(), i.getRow());
+                            setupContainer.removeTile(selectedTile);
+                            selectedTile = null;
+                            if (setupContainer.getSetupTiles().isEmpty()) {
+                                //TODO tell the server that we're done setting up
+                                Global.setBoardState(Global.BoardState.MY_TURN);
+                            }
+                        }
+                    }
                 }
             }
         });
+
+        if (Global.getBoardState().equals(Global.BoardState.SETUP)) {
+            for (SetupContainer.SetupTile tile : setupContainer.getSetupTiles()) {
+                if (tile.getBounds().contains(e.getPoint())) {
+                    if (selectedTile == null) {
+                        selectedTile = tile;
+                    } else if (selectedTile.equals(tile)) {
+                        selectedTile = null;
+                    }
+                }
+            }
+        }
+
     }
 
     public void paintScreen(Graphics g, ImageObserver o) {
@@ -186,6 +224,11 @@ public class Board implements Screen {
                         g.setColor(Color.WHITE);
                         g.drawString(String.valueOf(piece.getPieceType().getCombatValue()), xOffset + (TILE_SIZE - 9), yOffset + (TILE_SIZE - 9));
                     }
+                } else if (Global.getBoardState().equals(Global.BoardState.SETUP)) {
+                    if (y > 4) {
+                        g.setColor(yellowTransparent2);
+                        g.fillRect(xOffset, yOffset, TILE_SIZE, TILE_SIZE);
+                    }
                 }
                 if (piece.equals(selectedPiece)) {
                     if (piece.getPieceType().equals(Piece.PieceType.EMPTY))
@@ -200,14 +243,32 @@ public class Board implements Screen {
                 }
                 if (pieces.contains(piece)) {
                     if (piece.getPieceType().equals(Piece.PieceType.EMPTY))
-                        g.setColor(new Color(0, 155, 0, 128));
+                        g.setColor(greenTransparent);
                     else
-                        g.setColor(new Color(155, 0, 0, 128));
+                        g.setColor(redTransparent);
                     g.fillRect(xOffset, yOffset, TILE_SIZE, TILE_SIZE);
                 }
             }
         }
+        g.setColor(blackTransparent);
+        g.fillRect(0, 64 * SIZE_Y + 2, Global.WIDTH / 2 + 1, 260);
+        g.fillRect(Global.WIDTH / 2 + 1, 0, Global.WIDTH / 2, Global.HEIGHT);
+
+        if (Global.getBoardState().equals(Global.BoardState.SETUP)) {
+            g.setColor(Color.YELLOW);
+            g.setFont(titleFont);
+            g.drawString("Place your pieces on the board", 15, 64 * SIZE_Y + 32);
+            for (SetupContainer.SetupTile tile : setupContainer.getSetupTiles()) {
+                g.setColor(Color.YELLOW);
+                g.drawRect(tile.x, tile.y, tile.width, tile.height);
+                if (tile.equals(selectedTile)) {
+                    g.setColor(yellowTransparent2);
+                    g.fillRect(tile.x + 1, tile.y + 1, tile.width - 1, tile.height - 1);
+                }
+                g.drawImage(Images.getImage(String.valueOf(tile.getType().getSpriteIndex())),
+                        tile.x + setupContainer.getTileXOffset(), tile.y + setupContainer.getTileYOffset(), o);
+            }
+
+        }
     }
-
-
 }
