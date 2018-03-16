@@ -11,7 +11,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 
-import javax.swing.JFrame; 
+import javax.swing.JFrame;
+
+import session.MultiplayerQueue; 
 
 
 
@@ -26,6 +28,8 @@ public class Server implements Runnable {
 	public ServerSocket mainServer;
 	
 	public ServerWindow mainFrame;
+	
+	public MultiplayerQueue multiplayerQueue = null;
 	
 	/** Hashmap of all connections */
 	public HashMap<Integer, SocketHandler> connections = new HashMap<Integer, SocketHandler>();
@@ -80,7 +84,9 @@ public class Server implements Runnable {
 
 				debug("Waiting on incoming connections on port: "+PORT+" at "+mainServer.getInetAddress());
 				Socket socket = mainServer.accept();
-				
+				if (multiplayerQueue == null) {
+					multiplayerQueue = new MultiplayerQueue();
+				}
 				debug("Connection established at "+socket.getRemoteSocketAddress()+ ", sending to socket handler");
 
 
@@ -90,7 +96,9 @@ public class Server implements Runnable {
 					decrementClientCount(s.id);
 					
 				}
+				multiplayerQueue.checkForMatch();
 			
+				
 			}catch (SocketTimeoutException s) {
 		            debug("Socket timed out after "+(TIMEOUT / 1000)+ " seconds");
 		            break;

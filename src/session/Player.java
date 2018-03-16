@@ -7,6 +7,7 @@ import game.Piece;
 public class Player {
 
 		public ArrayList<Piece> pieces;
+		public boolean isTurn;
 		
 		public Player (ArrayList<Piece> playerPieces)  {
 			pieces = playerPieces;
@@ -46,4 +47,11 @@ public class Player {
 			pieces = p;
 		}
 		
+		public void setTurn(boolean t) {
+			isTurn = t;
+		}
+		
+		public boolean isTurn() {
+			return isTurn;
+		}
 }
