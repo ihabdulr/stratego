@@ -7,6 +7,8 @@ import java.awt.image.ImageObserver;
 import client.Global;
 import client.Global.GameState;
 import client.resources.Images;
+import server.Packets;
+import client.Network;
 
 public class MainMenu implements Screen {
 
@@ -15,11 +17,14 @@ public class MainMenu implements Screen {
     public MenuButton button_ai = new MenuButton("vs AI", 400, 400, 200, 50);
     public MenuButton button_quit = new MenuButton("Quit", 400, 500, 200, 50);
     public MenuButton buttonPressed = null;
+    
+
 
      public void processMouseMovedEvent(MouseEvent e) {
 
     }
 
+    
     public void paintScreen(Graphics g, ImageObserver o) {
 
         Graphics2D g2d = (Graphics2D) g;
@@ -50,7 +55,7 @@ public class MainMenu implements Screen {
             g2d.fillRect(350, 375, 300, 200);
             g2d.setColor(Color.WHITE);
             g2d.drawString("Searching for Players....", 425, 450);
-
+            
             g2d.drawImage(Images.loadImage("closeicon"), closeButton.x, closeButton.y, closeButton.width, closeButton.height, o);
         }
 
@@ -61,6 +66,11 @@ public class MainMenu implements Screen {
         if (button_pvp.getBounds().contains(e.getPoint()) && (buttonPressed == null || buttonPressed == button_pvp)) {
             //Global.setGameState(GameState.GAME);
             buttonPressed = button_pvp;
+            Network net = Global.getServer();
+            if (net != null) 
+            	net.addCommand(Packets.P_QUEUE_PLAYER);
+            else 
+            	System.out.println("null network");
         } else if (button_ai.getBounds().contains(e.getPoint()) && (buttonPressed == null || buttonPressed == button_ai)) {
             Global.setGameState(GameState.GAME);
             buttonPressed = button_ai;
@@ -71,6 +81,12 @@ public class MainMenu implements Screen {
         }
         //close button on "searching for player" box
         else if (closeButton.getBounds().contains(e.getPoint()) && (buttonPressed == button_pvp)) {
+        Network net = Global.getServer();
+             if (net != null) {
+            	net.removeCommand(Packets.P_QUEUE_PLAYER);
+             	net.addCommand(Packets.P_REMOVE_FROM_QUEUE);
+             }  else 
+             	System.out.println("null network");
             buttonPressed = null;
         }
 

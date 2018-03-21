@@ -8,6 +8,7 @@ public class Player {
 
 		public ArrayList<Piece> pieces;
 		public boolean isTurn;
+		public String clientAddress; //if empty, not playing multiplayer
 		
 		public Player (ArrayList<Piece> playerPieces)  {
 			pieces = playerPieces;
@@ -37,6 +38,14 @@ public class Player {
 						return pieces.get(i);
 			}
 			return null;
+		}
+		
+		public void setClientAddress(String s) {
+			clientAddress = s;
+		}
+		
+		public String getAddress() {
+			return clientAddress;
 		}
 		
 		public ArrayList<Piece> getPlayerPieces() {

@@ -6,6 +6,8 @@ import client.SPanel;
 import client.resources.Images;
 import game.Board;
 import game.Piece;
+import server.Server;
+import server.ServerWindow;
 
 public class ClientDriver extends JFrame {
 
@@ -37,8 +39,20 @@ public class ClientDriver extends JFrame {
     }
 
     public static void main(String[] args) {
-        //mainClient = new Network(PORT, SERVER);
-        new ClientDriver();
+        mainClient = new Network(PORT, SERVER);
+        
+		
+		Thread ms = new Thread(mainClient);
+		
+		SwingUtilities.invokeLater( new Runnable() {
+
+			@Override
+			public void run() {
+				 new ClientDriver();
+				 ms.start();
+				 Global.setServer(mainClient);
+			}
+		});
     }
 
 

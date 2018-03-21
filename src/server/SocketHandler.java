@@ -1,5 +1,6 @@
 package server;
 
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -20,19 +21,6 @@ public class SocketHandler extends Thread {
     public Socket socket;
     public int id = 0;
     public Server hostServer;
-
-    /**
-     * Packet handler (Messages incoming from client)
-     **/
-
-    public final String P_PING = "PING";
-    public final String P_REQUEST_ID = "REQUESTID";                //Request it's own client ID
-    public final String P_REQUEST_ADD = "REQUESTADDRESS";        //Request server's address
-    public final String P_DESTROY = "DESTROY";                    //Destroy this connection
-
-    /**
-     * End of packet handler
-     */
 
     public SocketHandler(Socket uniqueClient, int clientId, Server s) {
     	
@@ -77,7 +65,7 @@ public class SocketHandler extends Thread {
         		return;
             try {
                 if ((dIn != null) && (dOut != null)) {
-
+                	dOut.writeUTF("Listening...");
                     String packet = dIn.readUTF();
                     String response = handlePacket(packet);
                     dOut.writeUTF(response);
@@ -114,19 +102,27 @@ public class SocketHandler extends Thread {
         String n = "";
         switch (s) {
 
-            case P_PING:
+            case Packets.P_PING:
                 n = "PONG";
                 break;
-            case P_REQUEST_ID:
+            case Packets.P_REQUEST_ID:
                 n = Integer.toString(id);
                 break;
-            case P_REQUEST_ADD:
+            case Packets.P_REQUEST_ADD:
                 n = socket.getLocalSocketAddress().toString();
                 break;
-            case P_DESTROY:
+            case Packets.P_DESTROY:
                 n = "Closing connection...";
                 break;
-
+            case Packets.P_QUEUE_PLAYER: 
+            	n = "Adding client to matchmaking...";
+            	hostServer.multiplayerQueue.addPlayer(socket.getLocalSocketAddress().toString());
+            	debug("New player added to multiplayer: Queue contains "+hostServer.multiplayerQueue.getPlayers().size());
+            	break;
+            case Packets.P_REMOVE_FROM_QUEUE:
+            	n = "Removing client from matchmaking...";
+            	hostServer.multiplayerQueue.removePlayer(socket.getLocalSocketAddress().toString());
+            	break;
             default:
                 n = "Unknown request on call (" + s + ")";
 

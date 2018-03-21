@@ -10,6 +10,9 @@ import java.net.SocketTimeoutException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JFrame;
 
@@ -85,7 +88,17 @@ public class Server implements Runnable {
 				debug("Waiting on incoming connections on port: "+PORT+" at "+mainServer.getInetAddress());
 				Socket socket = mainServer.accept();
 				if (multiplayerQueue == null) {
+					//debug("Initalized player queue");
 					multiplayerQueue = new MultiplayerQueue();
+					
+					//Executor service to run a check for player matches every 5 seconds
+					ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
+					exec.scheduleAtFixedRate(new Runnable() {
+					  @Override
+					  public void run() {
+						  multiplayerQueue.checkForMatch();
+					  }
+					}, 0, 5, TimeUnit.SECONDS);
 				}
 				debug("Connection established at "+socket.getRemoteSocketAddress()+ ", sending to socket handler");
 
@@ -96,7 +109,6 @@ public class Server implements Runnable {
 					decrementClientCount(s.id);
 					
 				}
-				multiplayerQueue.checkForMatch();
 			
 				
 			}catch (SocketTimeoutException s) {
