@@ -3,6 +3,8 @@ package game;
 import client.Global;
 import client.resources.Images;
 import client.screens.Screen;
+import game.player.AIPlayer;
+import game.player.GamePlayer;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -44,7 +46,13 @@ public class Board implements Screen {
     private static Map<Piece.PieceType, Integer> capturedPieces = new HashMap<>();
     private static Map<Piece.PieceType, Integer> lostPieces = new HashMap<>();
 
+    private static GamePlayer aiPlayer;
+    private static boolean networkGame = false;
 
+
+    public static void setGameType(boolean network) {
+        networkGame = network;
+    }
 
     public static void setPieces(Piece[][] newPieces) {
         pieces = newPieces;
@@ -52,6 +60,12 @@ public class Board implements Screen {
 
     public static Piece[][] getPieces() {
         return pieces;
+    }
+
+    public static void addPieces(java.util.List<Piece> p) {
+        p.forEach(i -> {
+            pieces[i.getColumn()][i.getRow()] = i;
+        });
     }
 
 
@@ -82,8 +96,8 @@ public class Board implements Screen {
         initialize();
         setupContainer.clear();
         int flatIndex = 0;
-        for(int x = 0; x < SIZE_X; ++x) {
-            for(int y = 5; y < SIZE_Y; ++y) {
+        for (int x = 0; x < SIZE_X; ++x) {
+            for (int y = 5; y < SIZE_Y; ++y) {
                 pieces[x][y] = new Piece(SetupContainer.GAME_PIECES[flatIndex]).setPosition(x, y);
                 ++flatIndex;
             }
@@ -123,8 +137,26 @@ public class Board implements Screen {
         }
     }
 
-    public void attack(Piece aPiece, Piece dPiece) {
-        //TODO play animation here
+    public void attack(Piece aPiece, Piece zPiece) {
+
+        Piece dPiece = null;
+
+        //side 0 = aPiece = enemy, side 1 = dPiece = enemy
+        int side = aPiece.getPieceType().equals(Piece.PieceType.GENERIC) ? 0 : 1;
+        if (networkGame) {
+            //TODO Make the server fetch what the actual piece is
+        } else {
+            //Assume isPresent for now
+            if (side == 0)
+                dPiece = aiPlayer.getPiece(aPiece.getColumn(), aPiece.getRow()).get();
+            else
+                dPiece = aiPlayer.getPiece(zPiece.getColumn(), zPiece.getRow()).get();
+        }
+
+
+        Animation.playAnimation(dPiece);
+
+
         if (aPiece.getPieceType().getCombatValue() == dPiece.getPieceType().getCombatValue()) {
             pieces[aPiece.getColumn()][aPiece.getRow()] = new Piece(Piece.PieceType.EMPTY).setPosition(aPiece.getPosition());
             pieces[dPiece.getColumn()][dPiece.getRow()] = new Piece(Piece.PieceType.EMPTY).setPosition(dPiece.getPosition());
@@ -214,7 +246,6 @@ public class Board implements Screen {
                             setupContainer.removeTile(selectedTile);
                             selectedTile = null;
                             if (setupContainer.getSetupTiles().isEmpty()) {
-                                //TODO tell the server that we're done setting up
                                 readyButton.setEnabled(true);
                                 saveButton.setEnabled(true);
                             }
@@ -236,15 +267,21 @@ public class Board implements Screen {
             }
             for (BoardButton button : setupButtons) {
                 if (button.getBounds().contains(e.getPoint()) && button.isEnabled()) {
-                    if(button.equals(readyButton)) {
+                    if (button.equals(readyButton)) {
+                        if (!networkGame) {
+                            aiPlayer = new AIPlayer();
+                            addPieces(aiPlayer.getSanitizedPieces());
+                        } else {
+                            //TODO tell the server we're ready to go
+                        }
                         Global.setBoardState(Global.BoardState.MY_TURN);
-                    } else if(button.equals(clearButton)) {
+                    } else if (button.equals(clearButton)) {
                         initialize();
                         setupContainer.initialize();
                         autoFillButton.setEnabled(true);
                         readyButton.setEnabled(false);
                         saveButton.setEnabled(false);
-                    } else if(button.equals(autoFillButton)) {
+                    } else if (button.equals(autoFillButton)) {
                         autoFillBoard();
                         autoFillButton.setEnabled(false);
                         readyButton.setEnabled(true);
@@ -273,6 +310,11 @@ public class Board implements Screen {
         g.drawImage(Images.getImage("background_0"), 0, 0, o);
         java.util.List<Piece> pieces = getMovableTiles(selectedPiece);
         g2d.setColor(Color.WHITE);
+        if(Animation.shouldAnimate()){
+            Piece p = Animation.getAnimationPiece();
+            g.drawImage(Images.getImage(String.valueOf(p.getPieceType().getSpriteIndex())),
+                    p.getColumn() * TILE_SIZE, p.getRow() * TILE_SIZE, o);
+        }
         for (int x = 0; x < Board.SIZE_X; ++x) {
             for (int y = 0; y < Board.SIZE_Y; ++y) {
                 int xOffset = x * TILE_SIZE;
@@ -315,6 +357,7 @@ public class Board implements Screen {
                 }
             }
         }
+
         g.setColor(blackTransparent);
         g.fillRect(0, 64 * SIZE_Y + 2, Global.WIDTH / 2 + 1, 260);
         g.fillRect(Global.WIDTH / 2 + 1, 0, Global.WIDTH / 2, Global.HEIGHT);
