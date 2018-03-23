@@ -24,8 +24,8 @@ public class ServerWindow extends JFrame {
 	public ServerWindow(Server s) {
 		mainServer = s;
 		mainServer.setFrame(this);
-		this.setName("Connect4ker - Server");
-		this.setTitle("Connect4ker - Server");
+		this.setName("Stratego 2442 - Server");
+		this.setTitle("Stratego 2442 - Server");
 		this.setSize(new Dimension(800, 600));
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.setLocationRelativeTo(null);

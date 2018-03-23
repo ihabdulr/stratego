@@ -17,14 +17,14 @@ public class MainMenu implements Screen {
     public MenuButton button_ai = new MenuButton("vs AI", 400, 400, 200, 50);
     public MenuButton button_quit = new MenuButton("Quit", 400, 500, 200, 50);
     public MenuButton buttonPressed = null;
-    
+    private String searchStatus = "";
 
 
-     public void processMouseMovedEvent(MouseEvent e) {
+    public void processMouseMovedEvent(MouseEvent e) {
 
     }
 
-    
+
     public void paintScreen(Graphics g, ImageObserver o) {
 
         Graphics2D g2d = (Graphics2D) g;
@@ -54,8 +54,8 @@ public class MainMenu implements Screen {
             g2d.setColor(Color.BLUE);
             g2d.fillRect(350, 375, 300, 200);
             g2d.setColor(Color.WHITE);
-            g2d.drawString("Searching for Players....", 425, 450);
-            
+            g2d.drawString(searchStatus, 425, 450);
+
             g2d.drawImage(Images.loadImage("closeicon"), closeButton.x, closeButton.y, closeButton.width, closeButton.height, o);
         }
 
@@ -65,12 +65,12 @@ public class MainMenu implements Screen {
         //vs Player buttton
         if (button_pvp.getBounds().contains(e.getPoint()) && (buttonPressed == null || buttonPressed == button_pvp)) {
             //Global.setGameState(GameState.GAME);
+            searchStatus = "Searching for Players....";
             buttonPressed = button_pvp;
-            Network net = Global.getServer();
-            if (net != null) 
-            	net.addCommand(Packets.P_QUEUE_PLAYER);
-            else 
-            	System.out.println("null network");
+            if (Global.connectedServer.connect())
+                Global.connectedServer.addCommand(Packets.P_QUEUE_PLAYER);
+            else
+                searchStatus = "Failed to connect to the server";
         } else if (button_ai.getBounds().contains(e.getPoint()) && (buttonPressed == null || buttonPressed == button_ai)) {
             Global.setGameState(GameState.GAME);
             buttonPressed = button_ai;
@@ -81,12 +81,11 @@ public class MainMenu implements Screen {
         }
         //close button on "searching for player" box
         else if (closeButton.getBounds().contains(e.getPoint()) && (buttonPressed == button_pvp)) {
-        Network net = Global.getServer();
-             if (net != null) {
-            	net.removeCommand(Packets.P_QUEUE_PLAYER);
-             	net.addCommand(Packets.P_REMOVE_FROM_QUEUE);
-             }  else 
-             	System.out.println("null network");
+            if (Global.connectedServer.isConnected()) {
+                Global.connectedServer.removeCommand(Packets.P_QUEUE_PLAYER);
+                Global.connectedServer.addCommand(Packets.P_REMOVE_FROM_QUEUE);
+                Global.connectedServer.disconnect();
+            }
             buttonPressed = null;
         }
 

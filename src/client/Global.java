@@ -11,7 +11,7 @@ public class Global {
     public static int HEIGHT = 768;
     private static GameState gameState = GameState.MENU;
     private static BoardState boardState = BoardState.MY_TURN;
-    private static Network connectedServer;
+    public static Network connectedServer;
     
     public enum BoardState {SETUP, MY_TURN, THEIR_TURN, GAME_WON, GAME_LOSS}
     public enum GameState {GAME, MENU, CREDITS}

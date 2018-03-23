@@ -99,7 +99,8 @@ public class SocketHandler extends Thread {
      * @return Returns the appropriate message, or an unknown request
      */
     public String handlePacket(String s) {
-        String n = "";
+        System.out.println(s);
+        String n;
         switch (s) {
 
             case Packets.P_PING:
