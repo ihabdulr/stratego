@@ -25,6 +25,11 @@ public class AIPlayer extends GamePlayer {
         }
     }
 
+    @Override
+    public java.util.List<Piece> getPieces() {
+        return super.getSanitizedPieces();
+    }
+
 
 
 }

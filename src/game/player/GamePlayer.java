@@ -2,6 +2,7 @@ package game.player;
 
 import game.Piece;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -15,8 +16,9 @@ public abstract class GamePlayer {
 
     protected java.util.List<Piece> myPieces = new ArrayList<>();
 
-    public java.util.List<Piece> getSanitizedPieces() {
+    public abstract java.util.List<Piece> getPieces();
 
+    public java.util.List<Piece> getSanitizedPieces() {
         java.util.List<Piece> returnPieces = new ArrayList<>();
         myPieces.forEach(i -> {
             returnPieces.add(new Piece(Piece.PieceType.GENERIC).setPosition(i.getPosition()));
@@ -27,10 +29,13 @@ public abstract class GamePlayer {
     public Optional<Piece> getPiece(int x, int y) {
         Optional<Piece> piece = myPieces.stream().filter(i -> i.getColumn() == x && i.getRow() == y).findFirst();
         if (piece.isPresent()) {
-            System.out.println(piece.get().getPieceType());
+            return piece;
         }
+        return null;
+    }
 
-        return piece;
+    public Optional<Piece> getPiece(Point point) {
+        return getPiece(point.x, point.y);
     }
 
 }

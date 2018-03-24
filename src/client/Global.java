@@ -37,4 +37,14 @@ public class Global {
     	return connectedServer;
     }
 
+    private static boolean networkGame = false;
+
+    public static void setGameType(boolean network) {
+        networkGame = network;
+    }
+
+    public static boolean isNetworkGame() {
+        return networkGame;
+    }
+
 }
