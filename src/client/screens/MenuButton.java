@@ -3,7 +3,6 @@ package client.screens;
 
 import java.awt.*;
 
-import game.BoardButton;
 
 public class MenuButton {
 		private Rectangle rect;
