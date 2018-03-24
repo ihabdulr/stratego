@@ -11,7 +11,8 @@ import server.Packets;
 import client.Network;
 
 public class MainMenu implements Screen {
-
+	
+	
     public Rectangle closeButton = new Rectangle(625, 375, 25, 25);
     public MenuButton button_pvp = new MenuButton("vs Player", 400, 300, 200, 50);
     public MenuButton button_ai = new MenuButton("vs AI", 400, 400, 200, 50);
@@ -26,7 +27,11 @@ public class MainMenu implements Screen {
 
 
     public void paintScreen(Graphics g, ImageObserver o) {
-
+    		
+    		button_pvp.setFontMetrics(g.getFontMetrics(new Font("TimesRoman", Font.PLAIN, 25)));
+    		button_ai.setFontMetrics(g.getFontMetrics(new Font("TimesRoman", Font.PLAIN, 25)));
+    		button_quit.setFontMetrics(g.getFontMetrics(new Font("TimesRoman", Font.PLAIN, 25)));
+    		
         Graphics2D g2d = (Graphics2D) g;
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("ZapfDingbats", Font.PLAIN, 50));
@@ -40,9 +45,9 @@ public class MainMenu implements Screen {
 
         g2d.setColor(Color.YELLOW);
         g2d.setFont(new Font("TimesRoman", Font.PLAIN, 25));
-        g2d.drawString(button_pvp.getText(), (float) button_pvp.getX() + 50, (float) button_pvp.getY() + 35);
-        g2d.drawString(button_ai.getText(), (float) button_ai.getX() + 65, (float) button_ai.getY() + 35);
-        g2d.drawString(button_quit.getText(), (float) button_quit.getX() + 75, (float) button_quit.getY() + 35);
+        g2d.drawString(button_pvp.getText(), button_pvp.getStringX(), button_pvp.getStringY());
+        g2d.drawString(button_ai.getText(), button_ai.getStringX(), button_ai.getStringY());
+        g2d.drawString(button_quit.getText(), button_quit.getStringX(), button_quit.getStringY());
 
 
         //To draw an image, we use ImageObserver like this:
@@ -50,11 +55,14 @@ public class MainMenu implements Screen {
 
         //When vs player is clicked "searching for player" window appears
         if (button_pvp.equals(buttonPressed)) {
+        	
+        	 	MenuButton searchMenu = new MenuButton(searchStatus, 350, 375, 300, 200);
             g2d.setFont(new Font("TimesRoman", Font.PLAIN, 15));
             g2d.setColor(Color.BLUE);
-            g2d.fillRect(350, 375, 300, 200);
+            g2d.fillRect((int) searchMenu.getX(), (int) searchMenu.getY(), (int) searchMenu.getWidth(), (int) searchMenu.getHeight());
+            searchMenu.setFontMetrics(g.getFontMetrics(new Font("TimesRoman", Font.PLAIN, 15)));
             g2d.setColor(Color.WHITE);
-            g2d.drawString(searchStatus, 425, 450);
+            g2d.drawString(searchStatus,searchMenu.getStringX(),searchMenu.getStringY());
 
             g2d.drawImage(Images.loadImage("closeicon"), closeButton.x, closeButton.y, closeButton.width, closeButton.height, o);
         }
@@ -76,7 +84,7 @@ public class MainMenu implements Screen {
             buttonPressed = button_ai;
         }
         //quit button
-        else if (button_quit.getBounds().contains(e.getPoint())) {
+        else if (button_quit.getBounds().contains(e.getPoint()) && (buttonPressed == null || buttonPressed == button_quit)) {
             System.exit(0);
         }
         //close button on "searching for player" box
