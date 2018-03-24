@@ -147,7 +147,7 @@ public class Board implements Screen {
         }
     }
 
-     public boolean move(Piece start, Piece end) {
+    public boolean move(Piece start, Piece end) {
         java.util.List<Piece> available = GameLogic.getMovableTiles(start);
         if (!available.contains(end))
             return false;
@@ -166,7 +166,6 @@ public class Board implements Screen {
 
         return false;
     }
-
 
 
     public void processMousePressedEvent(MouseEvent e) {
@@ -298,10 +297,10 @@ public class Board implements Screen {
             }
         }
 
-        if(Animation.shouldAnimate()){
+        if (Animation.shouldAnimate()) {
             //Piece p = Animation.getAnimationPiece();
             g.drawImage(Images.getImage(String.valueOf(Animation.getAnimationIndex())),
-                    Animation.getX()* TILE_SIZE, Animation.getY() * TILE_SIZE, o);
+                    Animation.getX() * TILE_SIZE, Animation.getY() * TILE_SIZE, o);
         }
 
         g.setColor(blackTransparent);
@@ -334,6 +333,28 @@ public class Board implements Screen {
                 else
                     g.setColor(Color.RED);
                 g.drawString(button.getString(), button.getStringX(), button.getStringY());
+            }
+        } else {
+            g.setColor(Color.WHITE);
+            g.drawLine(Global.WIDTH - (Global.WIDTH / 4), 0, Global.WIDTH - (Global.WIDTH / 4), Global.HEIGHT);
+            g.drawLine(Global.WIDTH - (Global.WIDTH / 2), 0, Global.WIDTH - (Global.WIDTH / 2), Global.HEIGHT);
+            g.setColor(Color.YELLOW);
+            g.setFont(titleFont);
+            g.drawString("Captured Pieces", Global.WIDTH - (Global.WIDTH / 2) + 60, 35);
+            int i = 0;
+            for(java.util.Map.Entry<game.Piece.PieceType, Integer> p : capturedPieces.entrySet()) {
+                g.drawImage(Images.getImage(String.valueOf(p.getKey().getSpriteIndex())),
+                        Global.WIDTH - (Global.WIDTH / 2) + 45, 60 + (i * TILE_SIZE + 16) , o);
+                g.drawString("x" + p.getValue(),  Global.WIDTH - (Global.WIDTH / 2) + 45 + TILE_SIZE, 60 + (i * TILE_SIZE + 16)  + 32);
+                ++i;
+            }
+             i = 0;
+            g.drawString("Lost Pieces", Global.WIDTH - (Global.WIDTH / 4) + 70, 35);
+            for(java.util.Map.Entry<game.Piece.PieceType, Integer> p : lostPieces.entrySet()) {
+                g.drawImage(Images.getImage(String.valueOf(p.getKey().getSpriteIndex())),
+                        Global.WIDTH - (Global.WIDTH / 4) + 45, 60 + (i * TILE_SIZE + 16) , o);
+                g.drawString("x" + p.getValue(),  Global.WIDTH - (Global.WIDTH / 4) + 45 + TILE_SIZE, 60 + (i * TILE_SIZE + 16)  + 32);
+                ++i;
             }
 
         }
