@@ -230,6 +230,13 @@ public class Board implements Screen {
                         autoFillButton.setEnabled(false);
                         readyButton.setEnabled(true);
                         saveButton.setEnabled(true);
+                    }else if (button.equals(saveButton)) {
+                    		SaveLoad.saveSetup();
+                    }else if (button.equals(loadButton)) {
+                    		SaveLoad.loadSetup();
+                    		readyButton.setEnabled(true);
+                    		saveButton.setEnabled(true);
+                    		setupContainer.clear();
                     }
                 }
             }
