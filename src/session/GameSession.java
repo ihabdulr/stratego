@@ -1,5 +1,10 @@
 package session;
 
+/**
+ * 
+ * @author Aaron Roberts
+ *
+ */
 public class GameSession {
 
 	public Player player1, player2;

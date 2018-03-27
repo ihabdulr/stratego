@@ -1,5 +1,10 @@
 package server;
 
+/**
+ * 
+ * @author Aaron Roberts
+ *
+ */
 public final class Packets {
 
     private Packets() {
