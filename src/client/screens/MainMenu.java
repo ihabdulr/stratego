@@ -4,9 +4,12 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.ImageObserver;
 
+import javax.sound.sampled.Clip;
+
 import client.Global;
 import client.Global.GameState;
 import client.resources.Images;
+import client.resources.Sound;
 import server.Packets;
 import client.Network;
 
@@ -73,6 +76,11 @@ public class MainMenu implements Screen {
         //vs Player buttton
         if (button_pvp.getBounds().contains(e.getPoint()) && (buttonPressed == null || buttonPressed == button_pvp)) {
             //Global.setGameState(GameState.GAME);
+        	
+        		Clip clip=Sound.loadSound("buttonclickon");
+        		clip.setMicrosecondPosition(0);
+        		clip.start();
+        		
             searchStatus = "Searching for Players....";
             buttonPressed = button_pvp;
             if (Global.connectedServer.connect())
@@ -82,17 +90,23 @@ public class MainMenu implements Screen {
         } else if (button_ai.getBounds().contains(e.getPoint()) && (buttonPressed == null || buttonPressed == button_ai)) {
             Global.setGameState(GameState.GAME);
             buttonPressed = button_ai;
+            Clip clip=Sound.loadSound("buttonclickon");
+    			clip.setMicrosecondPosition(0);
+    			clip.start();
         }
         //quit button
         else if (button_quit.getBounds().contains(e.getPoint()) && (buttonPressed == null || buttonPressed == button_quit)) {
-            System.exit(0);
+        		System.exit(0);
         }
         //close button on "searching for player" box
         else if (closeButton.getBounds().contains(e.getPoint()) && (buttonPressed == button_pvp)) {
-            if (Global.connectedServer.isConnected()) {
+        		Clip clip=Sound.loadSound("buttonclickoff");
+			clip.setMicrosecondPosition(0);
+			clip.start();
+            if (Global.connectedServer.isConnected()) {            	
                 Global.connectedServer.removeCommand(Packets.P_QUEUE_PLAYER);
                 Global.connectedServer.addCommand(Packets.P_REMOVE_FROM_QUEUE);
-                Global.connectedServer.disconnect();
+                Global.connectedServer.disconnect();                
             }
             buttonPressed = null;
         }

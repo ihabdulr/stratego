@@ -4,6 +4,7 @@ import client.Global;
 import client.Network;
 import client.SPanel;
 import client.resources.Images;
+import client.resources.Sound;
 import game.Board;
 import game.Piece;
 import server.Server;
@@ -20,6 +21,7 @@ public class ClientDriver extends JFrame {
         Global.setBoardState(Global.BoardState.SETUP);
         Board.initialize();
         Images.initialize();
+        Sound.initialize();
         add(new SPanel());
         setTitle("Stratego 2442");
         pack();
