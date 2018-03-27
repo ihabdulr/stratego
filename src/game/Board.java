@@ -43,7 +43,7 @@ public class Board implements Screen {
 
     private java.util.List<BoardButton> setupButtons = Arrays.asList(
             autoFillButton, clearButton, readyButton.setEnabled(false),
-            loadButton, saveButton.setEnabled(false));
+            loadButton.setEnabled(SaveLoad.stateFileExists()), saveButton.setEnabled(false));
 
     private static Map<Piece.PieceType, Integer> capturedPieces = new HashMap<>();
     private static Map<Piece.PieceType, Integer> lostPieces = new HashMap<>();
@@ -225,6 +225,7 @@ public class Board implements Screen {
                         autoFillButton.setEnabled(true);
                         readyButton.setEnabled(false);
                         saveButton.setEnabled(false);
+                        loadButton.setEnabled(true);
                     } else if (button.equals(autoFillButton)) {
                         autoFillBoard();
                         autoFillButton.setEnabled(false);
@@ -232,10 +233,11 @@ public class Board implements Screen {
                         saveButton.setEnabled(true);
                     }else if (button.equals(saveButton)) {
                     		SaveLoad.saveSetup();
+                            loadButton.setEnabled(false);
                     }else if (button.equals(loadButton)) {
                     		SaveLoad.loadSetup();
+                            loadButton.setEnabled(false);
                     		readyButton.setEnabled(true);
-                    		saveButton.setEnabled(true);
                     		setupContainer.clear();
                     }
                 }

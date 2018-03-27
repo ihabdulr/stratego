@@ -6,56 +6,24 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class SaveLoad {
-	
-	
-	public static void saveSetup() {
+
+
+	public static String getPiecesAsString() {
 		String playerSetup="";
-		for(int x=0; x<Board.getLocalPlayer().getPieces().size();x++) {
-			if(Board.getLocalPlayer().getPieces().get(x).getPieceType()==Piece.PieceType.KING) {
-				playerSetup+="KING:";
-				playerSetup+=Board.getLocalPlayer().getPieces().get(x).getColumn()+":"
-						+Board.getLocalPlayer().getPieces().get(x).getRow()+"-";
-				
-			}
-			else if(Board.getLocalPlayer().getPieces().get(x).getPieceType()==Piece.PieceType.QUEEN) {
-				playerSetup+="QUEEN:";
-				playerSetup+=Board.getLocalPlayer().getPieces().get(x).getColumn()+":"
-						+Board.getLocalPlayer().getPieces().get(x).getRow()+"-";
-				
-			}
-			else if(Board.getLocalPlayer().getPieces().get(x).getPieceType()==Piece.PieceType.SERGEANT) {
-				playerSetup+="SERGEANT:";
-				playerSetup+=Board.getLocalPlayer().getPieces().get(x).getColumn()+":"
-						+Board.getLocalPlayer().getPieces().get(x).getRow()+"-";
-				
-			}
-			else if(Board.getLocalPlayer().getPieces().get(x).getPieceType()==Piece.PieceType.SCOUT) {
-				playerSetup+="SCOUT:";
-				playerSetup+=Board.getLocalPlayer().getPieces().get(x).getColumn()+":"
-						+Board.getLocalPlayer().getPieces().get(x).getRow()+"-";
-				
-			}
-			else if(Board.getLocalPlayer().getPieces().get(x).getPieceType()==Piece.PieceType.PRIVATE) {
-				playerSetup+="PRIVATE:";
-				playerSetup+=Board.getLocalPlayer().getPieces().get(x).getColumn()+":"
-						+Board.getLocalPlayer().getPieces().get(x).getRow()+"-";
-				
-			}
-			else if(Board.getLocalPlayer().getPieces().get(x).getPieceType()==Piece.PieceType.BOMB) {
-				playerSetup+="BOMB:";
-				playerSetup+=Board.getLocalPlayer().getPieces().get(x).getColumn()+":"
-						+Board.getLocalPlayer().getPieces().get(x).getRow()+"-";
-				
-			}
-			else if(Board.getLocalPlayer().getPieces().get(x).getPieceType()==Piece.PieceType.EMPTY) {
-				playerSetup+="EMPTY:";
-				playerSetup+=Board.getLocalPlayer().getPieces().get(x).getColumn()+":"
-						+Board.getLocalPlayer().getPieces().get(x).getRow()+"-";
-				
-			}
+		for(int x = 0; x < Board.getLocalPlayer().getPieces().size(); ++x) {
+			Piece p = Board.getLocalPlayer().getPieces().get(x);
+			if(p.getPieceType().equals(Piece.PieceType.EMPTY))
+				continue;
+			playerSetup += p.getPieceType().name() +":"+p.getColumn()+":"+p.getRow()+",";
 		}
+		return playerSetup;
+	}
+
+	public static void saveSetup() {
+		String playerSetup = getPiecesAsString();
 		
 		playerSetup+=" ";
 		try {
@@ -67,13 +35,41 @@ public class SaveLoad {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-	
+
+	}
+
+
+	public static java.util.List<Piece> convertPieces(String piecesString) {
+		java.util.List<Piece> pieceList = new ArrayList<>();
+		String[] pieces = piecesString.split(",");
+		for(String piece : pieces) {
+			if(piece.length() < 2)
+				break;
+			String[] props = piece.split(":");
+			int col = Integer.parseInt(props[1]);
+			int row = Integer.parseInt(props[2]);
+			String pieceName = props[0];
+			Piece.PieceType pieceType = null;
+			for (Piece.PieceType type : Piece.PieceType.values()) {
+				if(pieceName.equals(type.name())) {
+					pieceType = type;
+					break;
+				}
+			}
+			Piece boardPiece = new Piece(pieceType).setPosition(col, row);
+			pieceList.add(boardPiece);
+
+		}
+		return pieceList;
+	}
+
+
+	public static boolean stateFileExists() {
+		return new File("PlayerSetup").exists();
 	}
 	
-	
 	public static void loadSetup() {
-		String playerSetup="";
+
 		BufferedReader textReader=null;
 		try {
 			textReader=new BufferedReader(new FileReader(new File("PlayerSetup")));
@@ -84,87 +80,12 @@ public class SaveLoad {
 			e.printStackTrace();
 		}
 		try {
-			playerSetup= textReader.readLine();
+			for(Piece piece : convertPieces(textReader.readLine()))
+			 Board.setPiece(piece.getColumn(), piece.getRow(), piece);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		int strIndex=0;
-		//Board.setPiece(4, 4, new Piece(Piece.PieceType.KING));
-		for(int x=0; x<Board.getLocalPlayer().getPieces().size();x++) {
-			
-			//Board.getLocalPlayer().getPieces().size()
-			if(playerSetup.substring(strIndex,strIndex+4).equals("KING")) {
-				strIndex+=5;
-				
-				Board.setPiece(Integer.parseInt(playerSetup.substring(strIndex,strIndex+ 1))
-					    ,Integer.parseInt(playerSetup.substring(strIndex+2, strIndex+3))  
-						    ,new Piece(Piece.PieceType.KING));
-				
-				strIndex+=4;
-			}
-			else if(playerSetup.substring(strIndex,strIndex+5).equals("QUEEN")) {
-				strIndex+=6;
-				Board.setPiece(Integer.parseInt(playerSetup.substring(strIndex,strIndex+ 1))
-					    ,Integer.parseInt(playerSetup.substring(strIndex+2, strIndex+3))  
-					    ,new Piece(Piece.PieceType.QUEEN));
-				strIndex+=4;
-			}
-			else if(playerSetup.substring(strIndex, strIndex+8).equals("SERGEANT")) {
-				strIndex+=9;
-				Board.setPiece(Integer.parseInt(playerSetup.substring(strIndex,strIndex+ 1))
-					    ,Integer.parseInt(playerSetup.substring(strIndex+2, strIndex+3)) 
-					    ,new Piece(Piece.PieceType.SERGEANT));
-				strIndex+=4;
-			}
-			else if(playerSetup.substring(strIndex, strIndex+5).equals("SCOUT")) {
-				strIndex+=6;
-				Board.setPiece(Integer.parseInt(playerSetup.substring(strIndex,strIndex+ 1))
-					    ,Integer.parseInt(playerSetup.substring(strIndex+2, strIndex+3)) 
-					    ,new Piece(Piece.PieceType.SCOUT));
-				strIndex+=4;
-			}
-			else if(playerSetup.substring(strIndex, strIndex+7).equals("PRIVATE")) {
-				strIndex+=8;
-				Board.setPiece(Integer.parseInt(playerSetup.substring(strIndex,strIndex+ 1))
-					    ,Integer.parseInt(playerSetup.substring(strIndex+2, strIndex+3)) 
-					    ,new Piece(Piece.PieceType.PRIVATE));
-				strIndex+=4;
-			}
-			else if(playerSetup.substring(strIndex, strIndex+7).equals("GENERIC")) {
-				strIndex+=8;
-				Board.setPiece(Integer.parseInt(playerSetup.substring(strIndex,strIndex+ 1))
-					    ,Integer.parseInt(playerSetup.substring(strIndex+2, strIndex+3)) 
-					    ,new Piece(Piece.PieceType.GENERIC));
-				strIndex+=4;
-			}
-			else if(playerSetup.substring(strIndex, strIndex+5).equals("EMPTY")) {
-				strIndex+=6;
-				
-				Board.setPiece(Integer.parseInt(playerSetup.substring(strIndex,strIndex+ 1))
-					    ,Integer.parseInt(playerSetup.substring(strIndex+2, strIndex+3)) 
-					    ,new Piece(Piece.PieceType.EMPTY));
-				strIndex+=4;
-	
-			}
-			else if(playerSetup.substring(strIndex, strIndex+5).equals("BLOCK")) {
-				strIndex+=6;
-				Board.setPiece(Integer.parseInt(playerSetup.substring(strIndex,strIndex+ 1))
-					    ,Integer.parseInt(playerSetup.substring(strIndex+2, strIndex+3)) 
-					    ,new Piece(Piece.PieceType.BLOCK));
-				strIndex+=4;
-			}
-			else if(playerSetup.substring(strIndex, strIndex+4).equals("BOMB")) {
-				strIndex+=6;
-				Board.setPiece(Integer.parseInt(playerSetup.substring(strIndex,strIndex+ 1))
-					    ,Integer.parseInt(playerSetup.substring(strIndex+2, strIndex+3)) 
-					    ,new Piece(Piece.PieceType.BOMB));
-				strIndex+=4;
-			}
-			
-		}
-		
-	
 	
 	}
 
