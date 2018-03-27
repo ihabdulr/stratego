@@ -1,8 +1,14 @@
 package session;
 
 import java.util.ArrayList;
-
 import game.Piece;
+
+
+/**
+ * 
+ * @author Aaron Roberts
+ *
+ */
 
 public class Player {
 

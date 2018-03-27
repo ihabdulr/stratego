@@ -2,6 +2,12 @@ package session;
 
 import java.util.ArrayList;
 
+/**
+ * 
+ * @author Aaron Roberts
+ *
+ */
+
 public class MultiplayerQueue {
 	
 	public ArrayList<Player> playerQueue = null;
