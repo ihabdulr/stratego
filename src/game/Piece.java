@@ -90,5 +90,9 @@ public class Piece {
         return pieceType.equals(PieceType.SCOUT) ? 10 : 1;
     }
 
+   public void setPieceType(PieceType type) {
+        this.pieceType = type;
+   }
+
 
 }

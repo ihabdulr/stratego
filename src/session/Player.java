@@ -1,12 +1,20 @@
 package session;
 
 import java.util.ArrayList;
-
 import game.Piece;
+
+
+/**
+ * 
+ * @author Aaron Roberts
+ *
+ */
 
 public class Player {
 
 		public ArrayList<Piece> pieces;
+		public boolean isTurn;
+		public String clientAddress; //if empty, not playing multiplayer
 		
 		public Player (ArrayList<Piece> playerPieces)  {
 			pieces = playerPieces;
@@ -38,6 +46,14 @@ public class Player {
 			return null;
 		}
 		
+		public void setClientAddress(String s) {
+			clientAddress = s;
+		}
+		
+		public String getAddress() {
+			return clientAddress;
+		}
+		
 		public ArrayList<Piece> getPlayerPieces() {
 			return pieces;
 		}
@@ -46,4 +62,11 @@ public class Player {
 			pieces = p;
 		}
 		
+		public void setTurn(boolean t) {
+			isTurn = t;
+		}
+		
+		public boolean isTurn() {
+			return isTurn;
+		}
 }

@@ -2,6 +2,7 @@ package game;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 
 /**
@@ -39,6 +40,10 @@ public class SetupContainer extends Rectangle {
             Piece.PieceType.PRIVATE, Piece.PieceType.PRIVATE, Piece.PieceType.PRIVATE, Piece.PieceType.PRIVATE, Piece.PieceType.PRIVATE, Piece.PieceType.PRIVATE,
             Piece.PieceType.SERGEANT, Piece.PieceType.SERGEANT, Piece.PieceType.SERGEANT, Piece.PieceType.SERGEANT, Piece.PieceType.QUEEN, Piece.PieceType.KING
     };
+
+    public static java.util.List<Piece.PieceType> getGamePieces() {
+        return Arrays.asList(GAME_PIECES);
+    }
 
     public SetupContainer(int x, int y, int width, int height) {
         super(x, y, width, height);
