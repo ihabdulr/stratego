@@ -1,6 +1,8 @@
 # Stratego 2442
 
 Stratego 2<b>442</b>
+<br><b>Current Version</b>: Alpha Release (0.2.0)
+<br><b>YouTube Video:</b>https://youtu.be/jCbwqd6PJ7I<br>
 
 <b>Project Description:</b> Stratego 2442 is a Stratego clone game with a smaller board and faster playstyle. Unlike the full 40v40 battles, each team will have 25-30 units. Stratego 2442 will feature multiplayer support along with AI. As the name implies, the theme will be set in the future with unique units.
 
