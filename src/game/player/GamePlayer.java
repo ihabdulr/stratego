@@ -5,7 +5,6 @@ import game.Piece;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 
 /**
@@ -16,7 +15,19 @@ public abstract class GamePlayer {
 
     protected java.util.List<Piece> myPieces = new ArrayList<>();
 
-    public abstract java.util.List<Piece> getPieces();
+    public java.util.List<Piece> getPieces() {
+        return myPieces;
+    }
+
+    public void movePiece(Piece piece, Point destination) {
+       for(Piece p: myPieces) {
+           if(p.getPieceType().equals(piece.getPieceType()) && p.getPosition().equals(piece.getPosition())) {
+               myPieces.set(myPieces.indexOf(p), p.clone().setPosition(destination)); //lets be safe
+               return;
+
+           }
+       }
+    }
 
     public java.util.List<Piece> getSanitizedPieces() {
         java.util.List<Piece> returnPieces = new ArrayList<>();

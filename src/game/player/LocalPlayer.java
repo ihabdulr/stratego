@@ -17,5 +17,4 @@ public class LocalPlayer extends GamePlayer {
         return Stream.of(Board.getPieces()).flatMap(Stream::of).filter(i -> !i.getPieceType().equals(Piece.PieceType.GENERIC)).collect(Collectors.toList());
     }
 
-
 }

@@ -24,10 +24,13 @@ public class Animation {
 
     public static boolean shouldAnimate() {
         if (!showAnimation) {
-
             return false;
         }
         showAnimation = animationEndTime - System.currentTimeMillis() > 0;
+        return showAnimation;
+    }
+
+    public static boolean canAnimate() {
         return showAnimation;
     }
 

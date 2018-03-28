@@ -60,6 +60,9 @@ public class Board implements Screen {
         return localPlayer;
     }
 
+    public static GamePlayer getCurrentPlayer() {
+        return Global.getBoardState().equals(Global.BoardState.MY_TURN) ? localPlayer : enemyPlayer;
+    }
 
     public static void setPieces(Piece[][] newPieces) {
         pieces = newPieces;
@@ -73,6 +76,20 @@ public class Board implements Screen {
         p.forEach(i -> {
             pieces[i.getColumn()][i.getRow()] = i;
         });
+    }
+
+    public static java.util.List<Piece> getBoardPieceObjects(java.util.List<Piece> alias) {
+        java.util.List<Piece> returnPieces = new ArrayList<Piece>();
+        for (Piece p : alias) {
+            Optional<Piece> piece = Stream.of(pieces).flatMap(Stream::of).filter(i -> i.getPieceType().equals(p.getPieceType()) &&
+                    i.getPosition().equals(p.getPosition())).findFirst();
+            if (piece.isPresent()) {
+                returnPieces.add(piece.get());
+            } else {
+                System.out.println("FAILED TO CONVERT!");
+            }
+        }
+        return returnPieces;
     }
 
 
@@ -115,18 +132,26 @@ public class Board implements Screen {
         readyButton.setEnabled(true);
     }
 
+
+    //Returns a piece in the context of Local Playerflatmap
     public static Piece getPiece(int col, int row) {
+        //  if (Global.getBoardState().equals(Global.BoardState.SETUP))
         return pieces[col][row];
+        //   return GameLogic.getPiece(new Point(col, row), Board.getLocalPlayer(), Board.getEnemyPlayer());
     }
+
 
     public static void setPiece(int col, int row, Piece piece) {
         pieces[col][row] = piece.setPosition(col, row);
     }
 
     //Moves a piece, placing an empty piece in the old location
-    public void movePiece(Piece piece, Piece dest) {
-        pieces[dest.getColumn()][dest.getRow()] = piece.clone().setPosition(dest.getPosition());
+    public static void movePiece(Piece piece, Piece dest) {
+        if (Board.getCurrentPlayer().equals(enemyPlayer))
+            Board.getEnemyPlayer().movePiece(piece, dest.getPosition());
+        pieces[dest.getColumn()][dest.getRow()] = pieces[piece.getColumn()][piece.getRow()].clone().setPosition(dest.getPosition());
         pieces[piece.getColumn()][piece.getRow()] = dest.clone().setPosition(piece.getPosition());
+
     }
 
     public static void addCapturedPiece(Piece.PieceType pieceType) {
@@ -147,9 +172,13 @@ public class Board implements Screen {
         }
     }
 
-    public boolean move(Piece start, Piece end) {
-        java.util.List<Piece> available = GameLogic.getMovableTiles(start);
-        if (!available.contains(end))
+    public static boolean move(Piece start, Piece end) {
+
+        //DO NOT FOR THE LOVE OF GOD USE .contains, IT WILL RETURN FALSE
+        //BECAUSE .contains CHECKS FOR THE OBJECT ADDRESS
+        //Alternatively use the getBoardPieceObjects() method
+        if (GameLogic.getMovableTiles(start).stream().noneMatch(p ->
+                p.getPosition().equals(end.getPosition()) && p.getPieceType().equals(end.getPieceType())))
             return false;
 
         //simple swap
@@ -162,6 +191,7 @@ public class Board implements Screen {
         if (end.getPieceType().equals(Piece.PieceType.GENERIC)) {
             GameLogic.attack(start, end.clone(enemyPlayer.getPiece(end.getPosition()).get().getPieceType()));
             selectedPiece = null;
+            return true;
         }
 
         return false;
@@ -180,7 +210,10 @@ public class Board implements Screen {
                         }
                     } else if (selectedPiece != null) {
                         e.consume();
-                        move(selectedPiece, i);
+                        if (move(selectedPiece, i)) {
+                            Global.setBoardState(Global.BoardState.THEIR_TURN);
+                            ((AIPlayer) enemyPlayer).nextMove();
+                        }
                     }
                 } else if (Global.getBoardState().equals(Global.BoardState.SETUP)) {
                     if (selectedTile != null) {
@@ -231,14 +264,14 @@ public class Board implements Screen {
                         autoFillButton.setEnabled(false);
                         readyButton.setEnabled(true);
                         saveButton.setEnabled(true);
-                    }else if (button.equals(saveButton)) {
-                    		SaveLoad.saveSetup();
-                            loadButton.setEnabled(false);
-                    }else if (button.equals(loadButton)) {
-                    		SaveLoad.loadSetup();
-                            loadButton.setEnabled(false);
-                    		readyButton.setEnabled(true);
-                    		setupContainer.clear();
+                    } else if (button.equals(saveButton)) {
+                        SaveLoad.saveSetup();
+                        loadButton.setEnabled(false);
+                    } else if (button.equals(loadButton)) {
+                        SaveLoad.loadSetup();
+                        loadButton.setEnabled(false);
+                        readyButton.setEnabled(true);
+                        setupContainer.clear();
                     }
                 }
             }
@@ -261,7 +294,7 @@ public class Board implements Screen {
     public void paintScreen(Graphics g, ImageObserver o) {
         Graphics2D g2d = (Graphics2D) g;
         g.drawImage(Images.getImage("background_0"), 0, 0, o);
-        java.util.List<Piece> pieces = GameLogic.getMovableTiles(selectedPiece);
+        java.util.List<Piece> pieces = Board.getBoardPieceObjects(GameLogic.getMovableTiles(selectedPiece));
         g2d.setColor(Color.WHITE);
         for (int x = 0; x < Board.SIZE_X; ++x) {
             for (int y = 0; y < Board.SIZE_Y; ++y) {
@@ -351,18 +384,18 @@ public class Board implements Screen {
             g.setFont(titleFont);
             g.drawString("Captured Pieces", Global.WIDTH - (Global.WIDTH / 2) + 60, 35);
             int i = 0;
-            for(java.util.Map.Entry<game.Piece.PieceType, Integer> p : capturedPieces.entrySet()) {
+            for (java.util.Map.Entry<game.Piece.PieceType, Integer> p : capturedPieces.entrySet()) {
                 g.drawImage(Images.getImage(String.valueOf(p.getKey().getSpriteIndex())),
-                        Global.WIDTH - (Global.WIDTH / 2) + 45, 60 + (i * TILE_SIZE + 16) , o);
-                g.drawString("x" + p.getValue(),  Global.WIDTH - (Global.WIDTH / 2) + 45 + TILE_SIZE, 60 + (i * TILE_SIZE + 16)  + 32);
+                        Global.WIDTH - (Global.WIDTH / 2) + 45, 60 + (i * TILE_SIZE + 16), o);
+                g.drawString("x" + p.getValue(), Global.WIDTH - (Global.WIDTH / 2) + 45 + TILE_SIZE, 60 + (i * TILE_SIZE + 16) + 32);
                 ++i;
             }
-             i = 0;
+            i = 0;
             g.drawString("Lost Pieces", Global.WIDTH - (Global.WIDTH / 4) + 70, 35);
-            for(java.util.Map.Entry<game.Piece.PieceType, Integer> p : lostPieces.entrySet()) {
+            for (java.util.Map.Entry<game.Piece.PieceType, Integer> p : lostPieces.entrySet()) {
                 g.drawImage(Images.getImage(String.valueOf(p.getKey().getSpriteIndex())),
-                        Global.WIDTH - (Global.WIDTH / 4) + 45, 60 + (i * TILE_SIZE + 16) , o);
-                g.drawString("x" + p.getValue(),  Global.WIDTH - (Global.WIDTH / 4) + 45 + TILE_SIZE, 60 + (i * TILE_SIZE + 16)  + 32);
+                        Global.WIDTH - (Global.WIDTH / 4) + 45, 60 + (i * TILE_SIZE + 16), o);
+                g.drawString("x" + p.getValue(), Global.WIDTH - (Global.WIDTH / 4) + 45 + TILE_SIZE, 60 + (i * TILE_SIZE + 16) + 32);
                 ++i;
             }
 
