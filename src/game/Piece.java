@@ -13,7 +13,7 @@ public class Piece {
     public enum PieceType {
         KING(1, 1, true), QUEEN(2, 6, true), SERGEANT(7, 7, true), PRIVATE(8, 8, true),
         SCOUT(9, 9, true), EMPTY(-1, 99, false), GENERIC(-1, 99, false), BLOCK(1, 99, false),
-        BOMB(-1, 99, false);
+        BOMB(-1, 100, false), FLAG(1, 100, false);
 
         int combatValue, spriteIndex;
         boolean selectable;
@@ -22,6 +22,10 @@ public class Piece {
             this.combatValue = combatValue;
             this.spriteIndex = spriteIndex;
             this.selectable = selectable;
+        }
+
+        public boolean isPieceSpecial() {
+            return combatValue == 100;
         }
 
         public int getCombatValue() {

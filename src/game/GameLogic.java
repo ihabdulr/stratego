@@ -20,8 +20,6 @@ public class GameLogic {
 
     public static void attack(Piece aPiece, Piece zPiece) {
 
-        Piece[][] pieces = Board.getPieces();
-
         Piece dPiece;
 
         //side 0 = aPiece = enemy, side 1 = dPiece = enemy
@@ -43,23 +41,47 @@ public class GameLogic {
 
             @Override
             public void call() {
-                if (aPiece.getPieceType().getCombatValue() == dPiece.getPieceType().getCombatValue()) {
-                    Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
-                    Board.setPiece(dPiece.getColumn(), dPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
-                    Board.addCapturedPiece(dPiece.getPieceType());
-                    Board.addLostPiece(aPiece.getPieceType());
-                } else if (aPiece.getPieceType().getCombatValue() > dPiece.getPieceType().getCombatValue()) {
-                    Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
-                    Board.addLostPiece(aPiece.getPieceType());
+                if(dPiece.getPieceType().isPieceSpecial()) {
+                    switch(dPiece.getPieceType()) {
+                        case BOMB:
+                            if(aPiece.getPieceType().equals(Piece.PieceType.PRIVATE)) {
+                                Board.setPiece(dPiece.getColumn(), dPiece.getRow(), aPiece.clone());
+                                Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+                                Board.addCapturedPiece(dPiece.getPieceType());
+                            } else {
+                                Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+                                Board.addLostPiece(aPiece.getPieceType());
+                            }
+                            break;
+                        case FLAG:
+                            //This is for local only!
+                            if(Global.getBoardState().equals(Global.BoardState.MY_TURN))
+                                Global.setBoardState(Global.BoardState.GAME_WON);
+                            else
+                                Global.setBoardState(Global.BoardState.GAME_LOSS);
+                            break;
+                        default: //This shouldnt happen
+                            System.out.println("Error: Reached end of game logic for special piece");
+                            System.out.println("Piece 1: " + aPiece.getPieceType().name());
+                            System.out.println("Piece 2: " + dPiece.getPieceType().name());
+                    }
                 } else {
-                    Board.setPiece(dPiece.getColumn(), dPiece.getRow(), aPiece.clone());
-                    Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
-                    Board.addCapturedPiece(dPiece.getPieceType());
+                    if (aPiece.getPieceType().getCombatValue() == dPiece.getPieceType().getCombatValue()) {
+                        Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+                        Board.setPiece(dPiece.getColumn(), dPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+                        Board.addCapturedPiece(dPiece.getPieceType());
+                        Board.addLostPiece(aPiece.getPieceType());
+                    } else if (aPiece.getPieceType().getCombatValue() > dPiece.getPieceType().getCombatValue()) {
+                        Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+                        Board.addLostPiece(aPiece.getPieceType());
+                    } else {
+                        Board.setPiece(dPiece.getColumn(), dPiece.getRow(), aPiece.clone());
+                        Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+                        Board.addCapturedPiece(dPiece.getPieceType());
+                    }
                 }
-                Board.setPieces(pieces);
             }
         }.start();
-
 
     }
 

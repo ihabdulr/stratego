@@ -28,6 +28,10 @@ public class Global {
     public static void setBoardState(BoardState state) {
         boardState = state;
     }
+
+    public static boolean isGameOver() {
+        return boardState.equals(BoardState.GAME_LOSS) || boardState.equals(BoardState.GAME_WON);
+    }
     
     public static void setServer(Network serve) {
     	connectedServer = serve;

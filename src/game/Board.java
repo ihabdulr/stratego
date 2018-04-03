@@ -199,84 +199,87 @@ public class Board implements Screen {
 
 
     public void processMousePressedEvent(MouseEvent e) {
-        Stream.of(pieces).flatMap(Stream::of).forEach(i -> {
-            if (i.getBounds().contains(e.getPoint())) {
-                if (Global.getBoardState().equals(Global.BoardState.MY_TURN)) {
-                    if (i.getPieceType().isSelectable()) {
-                        if (selectedPiece == null) {
-                            selectedPiece = i;
-                        } else if (selectedPiece.equals(i)) {
-                            selectedPiece = null;
+        if(!Global.isGameOver()) {
+            Stream.of(pieces).flatMap(Stream::of).forEach(i -> {
+                if (i.getBounds().contains(e.getPoint())) {
+                    if (Global.getBoardState().equals(Global.BoardState.MY_TURN)) {
+                        if (i.getPieceType().isSelectable()) {
+                            if (selectedPiece == null) {
+                                selectedPiece = i;
+                            } else if (selectedPiece.equals(i)) {
+                                selectedPiece = null;
+                            }
+                        } else if (selectedPiece != null) {
+                            e.consume();
+                            if (move(selectedPiece, i)) {
+                                Global.setBoardState(Global.BoardState.THEIR_TURN);
+                                ((AIPlayer) enemyPlayer).nextMove();
+                            }
                         }
-                    } else if (selectedPiece != null) {
-                        e.consume();
-                        if (move(selectedPiece, i)) {
-                            Global.setBoardState(Global.BoardState.THEIR_TURN);
-                            ((AIPlayer) enemyPlayer).nextMove();
-                        }
-                    }
-                } else if (Global.getBoardState().equals(Global.BoardState.SETUP)) {
-                    if (selectedTile != null) {
-                        if (i.getPieceType().equals(Piece.PieceType.EMPTY)) {
-                            pieces[i.getColumn()][i.getRow()] = new Piece(selectedTile.getType()).setPosition(i.getColumn(), i.getRow());
-                            setupContainer.removeTile(selectedTile);
-                            selectedTile = null;
-                            if (setupContainer.getSetupTiles().isEmpty()) {
-                                readyButton.setEnabled(true);
-                                saveButton.setEnabled(true);
+                    } else if (Global.getBoardState().equals(Global.BoardState.SETUP)) {
+                        if (selectedTile != null) {
+                            if (i.getPieceType().equals(Piece.PieceType.EMPTY)) {
+                                pieces[i.getColumn()][i.getRow()] = new Piece(selectedTile.getType()).setPosition(i.getColumn(), i.getRow());
+                                setupContainer.removeTile(selectedTile);
+                                selectedTile = null;
+                                if (setupContainer.getSetupTiles().isEmpty()) {
+                                    readyButton.setEnabled(true);
+                                    saveButton.setEnabled(true);
+                                }
                             }
                         }
                     }
                 }
-            }
-        });
+            });
 
-        if (Global.getBoardState().equals(Global.BoardState.SETUP)) {
-            for (SetupContainer.SetupTile tile : setupContainer.getSetupTiles()) {
-                if (tile.getBounds().contains(e.getPoint())) {
-                    if (selectedTile == null) {
-                        selectedTile = tile;
-                    } else if (selectedTile.equals(tile)) {
-                        selectedTile = null;
+            if (Global.getBoardState().equals(Global.BoardState.SETUP)) {
+                for (SetupContainer.SetupTile tile : setupContainer.getSetupTiles()) {
+                    if (tile.getBounds().contains(e.getPoint())) {
+                        if (selectedTile == null) {
+                            selectedTile = tile;
+                        } else if (selectedTile.equals(tile)) {
+                            selectedTile = null;
+                        }
                     }
                 }
-            }
-            for (BoardButton button : setupButtons) {
-                if (button.getBounds().contains(e.getPoint()) && button.isEnabled()) {
-                    if (button.equals(readyButton)) {
-                        if (!Global.isNetworkGame()) {
-                            enemyPlayer = new AIPlayer();
-                            addPieces(enemyPlayer.getSanitizedPieces());
-                        } else {
-                            //TODO tell the server we're ready to go
-                            enemyPlayer = new NetworkPlayer();
+                for (BoardButton button : setupButtons) {
+                    if (button.getBounds().contains(e.getPoint()) && button.isEnabled()) {
+                        if (button.equals(readyButton)) {
+                            if (!Global.isNetworkGame()) {
+                                enemyPlayer = new AIPlayer();
+                                addPieces(enemyPlayer.getSanitizedPieces());
+                                //Global.setBoardState(Global.BoardState.GAME_WON); //used for testing
+                                Global.setBoardState(Global.BoardState.MY_TURN);
+                            } else {
+                                //TODO tell the server we're ready to go
+                                enemyPlayer = new NetworkPlayer();
+                            }
+
+                        } else if (button.equals(clearButton)) {
+                            initialize();
+                            setupContainer.initialize();
+                            autoFillButton.setEnabled(true);
+                            readyButton.setEnabled(false);
+                            saveButton.setEnabled(false);
+                            loadButton.setEnabled(true);
+                        } else if (button.equals(autoFillButton)) {
+                            autoFillBoard();
+                            autoFillButton.setEnabled(false);
+                            readyButton.setEnabled(true);
+                            saveButton.setEnabled(true);
+                        } else if (button.equals(saveButton)) {
+                            SaveLoad.saveSetup();
+                            loadButton.setEnabled(false);
+                        } else if (button.equals(loadButton)) {
+                            SaveLoad.loadSetup();
+                            loadButton.setEnabled(false);
+                            readyButton.setEnabled(true);
+                            setupContainer.clear();
                         }
-                        Global.setBoardState(Global.BoardState.MY_TURN);
-                    } else if (button.equals(clearButton)) {
-                        initialize();
-                        setupContainer.initialize();
-                        autoFillButton.setEnabled(true);
-                        readyButton.setEnabled(false);
-                        saveButton.setEnabled(false);
-                        loadButton.setEnabled(true);
-                    } else if (button.equals(autoFillButton)) {
-                        autoFillBoard();
-                        autoFillButton.setEnabled(false);
-                        readyButton.setEnabled(true);
-                        saveButton.setEnabled(true);
-                    } else if (button.equals(saveButton)) {
-                        SaveLoad.saveSetup();
-                        loadButton.setEnabled(false);
-                    } else if (button.equals(loadButton)) {
-                        SaveLoad.loadSetup();
-                        loadButton.setEnabled(false);
-                        readyButton.setEnabled(true);
-                        setupContainer.clear();
                     }
                 }
             }
         }
-
     }
 
     public void processMouseMovedEvent(MouseEvent e) {
@@ -397,6 +400,14 @@ public class Board implements Screen {
                         Global.WIDTH - (Global.WIDTH / 4) + 45, 60 + (i * TILE_SIZE + 16), o);
                 g.drawString("x" + p.getValue(), Global.WIDTH - (Global.WIDTH / 4) + 45 + TILE_SIZE, 60 + (i * TILE_SIZE + 16) + 32);
                 ++i;
+            }
+
+            if(Global.isGameOver()) {
+                g.setColor(blackTransparent);
+                g.fillRect(Global.WIDTH / 4, Global.HEIGHT/4, Global.WIDTH/2, Global.HEIGHT/2);
+                g.setColor(Color.YELLOW);
+                g.drawString(Global.getBoardState().name().replace("_", " ") + "!",
+                        465, 250);
             }
 
         }
