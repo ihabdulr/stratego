@@ -11,8 +11,11 @@ public class NetworkPlayer extends GamePlayer {
 
     @Override
     public Optional<Piece> getPiece(int x, int y) {
-        //TODO ask server for this piece
-        return null;
+        Piece serverRequest = null;
+        //TODO write your code here
+        //serverRequest = 
+        return serverRequest == null ? Optional.empty() : Optional.of(new Piece(Piece.PieceType.BOMB));
+
     }
 
     @Override
