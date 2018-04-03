@@ -40,6 +40,9 @@ public class Board implements Screen {
     private BoardButton loadButton = new BoardButton((Global.WIDTH / 2) + 32, 232, (Global.WIDTH / 2) - 64, 48, "Load Setup");
     private BoardButton saveButton = new BoardButton((Global.WIDTH / 2) + 32, 328, (Global.WIDTH / 2) - 64, 48, "Save Setup");
     private BoardButton readyButton = new BoardButton((Global.WIDTH / 2) + 32, 424, (Global.WIDTH / 2) - 64, 48, "Ready");
+    private BoardButton mainMenuButton = new BoardButton((Global.WIDTH / 4) + 32, Global.HEIGHT/2,
+                                                         (Global.WIDTH/2)-64, 64, "Main Menu");
+
 
     private java.util.List<BoardButton> setupButtons = Arrays.asList(
             autoFillButton, clearButton, readyButton.setEnabled(false),
@@ -278,6 +281,10 @@ public class Board implements Screen {
                         }
                     }
                 }
+            } else if(Global.isGameOver()) {
+                if(mainMenuButton.getBounds().contains(e.getPoint()) && mainMenuButton.isEnabled()) {
+                    Global.setGameState(Global.GameState.MENU);
+                }
             }
         }
     }
@@ -291,7 +298,27 @@ public class Board implements Screen {
                     button.setHighlighted(false);
                 }
             }
+        } else if (Global.isGameOver()) {
+            if (mainMenuButton.getBounds().contains(e.getPoint())) {
+                mainMenuButton.setHighlighted(true);
+            } else {
+                mainMenuButton.setHighlighted(false);
+            }
         }
+    }
+
+    public void formatButton(Graphics g, BoardButton button) {
+        if (button.isHighlighted())
+            g.setColor(whiteTransparent);
+        else
+            g.setColor(blackTransparent);
+        g.fillRect(button.x, button.y, button.width, button.height);
+        button.setFontMetrics(g.getFontMetrics(titleFont));
+        if (button.isEnabled())
+            g.setColor(Color.YELLOW);
+        else
+            g.setColor(Color.RED);
+        g.drawString(button.getString(), button.getStringX(), button.getStringY());
     }
 
     public void paintScreen(Graphics g, ImageObserver o) {
@@ -367,17 +394,7 @@ public class Board implements Screen {
                         tile.x + setupContainer.getTileXOffset(), tile.y + setupContainer.getTileYOffset(), o);
             }
             for (BoardButton button : setupButtons) {
-                if (button.isHighlighted())
-                    g.setColor(whiteTransparent);
-                else
-                    g.setColor(blackTransparent);
-                g.fillRect(button.x, button.y, button.width, button.height);
-                button.setFontMetrics(g.getFontMetrics(titleFont));
-                if (button.isEnabled())
-                    g.setColor(Color.YELLOW);
-                else
-                    g.setColor(Color.RED);
-                g.drawString(button.getString(), button.getStringX(), button.getStringY());
+                formatButton(g, button);
             }
         } else {
             g.setColor(Color.WHITE);
@@ -404,10 +421,12 @@ public class Board implements Screen {
 
             if(Global.isGameOver()) {
                 g.setColor(blackTransparent);
+                g.fillRect(0,0,Global.WIDTH,Global.HEIGHT);
                 g.fillRect(Global.WIDTH / 4, Global.HEIGHT/4, Global.WIDTH/2, Global.HEIGHT/2);
                 g.setColor(Color.YELLOW);
                 g.drawString(Global.getBoardState().name().replace("_", " ") + "!",
                         465, 250);
+                formatButton(g, mainMenuButton);
             }
 
         }
