@@ -13,8 +13,8 @@ public class NetworkPlayer extends GamePlayer {
     public Optional<Piece> getPiece(int x, int y) {
         Piece serverRequest = null;
         //TODO write your code here
-        //serverRequest = 
-        return serverRequest == null ? Optional.empty() : Optional.of(new Piece(Piece.PieceType.BOMB));
+        //serverRequest =
+        return serverRequest == null ? Optional.empty() : Optional.of(serverRequest);
 
     }
 
