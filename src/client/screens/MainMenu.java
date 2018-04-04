@@ -77,6 +77,7 @@ public class MainMenu implements Screen {
                     (int) button_quit.getHeight());
         }
 
+        
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Sans-Serif", Font.PLAIN, 25));
         g2d.drawString(button_pvp.getText(), button_pvp.getStringX(), button_pvp.getStringY());
@@ -96,7 +97,7 @@ public class MainMenu implements Screen {
                     (int) searchMenu.getHeight());
             searchMenu.setFontMetrics(g.getFontMetrics(new Font("Sans-Serif", Font.PLAIN, 15)));
             g2d.setColor(Color.WHITE);
-
+            searchStatus = "Searching for a player...";
             g2d.drawString(searchStatus, searchMenu.getStringX(), searchMenu.getStringY());
 
             g.drawImage(Images.getImage("close_background_"), 0, 0, o);
@@ -110,6 +111,8 @@ public class MainMenu implements Screen {
 
     public void processMousePressedEvent(MouseEvent e) {
         // vs Player buttton
+    	System.out.println("Board state: "+Global.getBoardState()+" | GameState: "+Global.getGameState());
+
         if (button_pvp.getBounds().contains(e.getPoint()) && (buttonPressed == null || buttonPressed == button_pvp)) {
             // Global.setGameState(GameState.GAME);
 

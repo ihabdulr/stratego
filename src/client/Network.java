@@ -7,6 +7,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import client.Global.GameState;
+import server.Packets;
+
 /**
  * Setups the client to attempt an connected to a server
  *
@@ -23,6 +26,7 @@ public class Network implements Runnable {
     private DataOutputStream dOut = null;
     private Socket clientConnection = null;
     private boolean connected = false;
+    private String answer = "";
 
 
     public Network(int port, String server) {
@@ -81,7 +85,8 @@ public class Network implements Runnable {
                         dOut.writeUTF(commands.get(commands.size() - 1));
                         commands.remove(commands.size() - 1);
                     }
-                    String answer = dIn.readUTF();
+                    answer = dIn.readUTF();
+                    handleIncomingPacket(answer);
                     if (!answer.equals("Listening..."))
                         debug(dIn.readUTF());
 
@@ -99,6 +104,23 @@ public class Network implements Runnable {
         }
     }
 
+    public void handleIncomingPacket(String s) { 
+    	switch (s) {
+    	
+	    	case Packets.P_INSETUP: 
+	    		Global.setBoardState(Global.BoardState.SETUP);
+	    		Global.setGameState(GameState.GAME);
+	    		System.out.println("Set gamestate");
+	    		break;
+	    	case Packets.P_INGAME:
+	    		Global.setGameState(Global.GameState.GAME);
+	    	default: 
+	    		break;
+    	}
+    }
+    public String getAnswer() {
+    	return answer;
+    }
 
     /**
      * Send commands to the server using this

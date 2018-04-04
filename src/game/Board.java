@@ -7,6 +7,7 @@ import game.player.AIPlayer;
 import game.player.GamePlayer;
 import game.player.LocalPlayer;
 import game.player.NetworkPlayer;
+import server.Packets;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -256,6 +257,7 @@ public class Board implements Screen {
                             } else {
                                 //TODO tell the server we're ready to go
                                 enemyPlayer = new NetworkPlayer();
+                                Global.connectedServer.addCommand(Packets.P_SEND_PIECES + SaveLoad.getPiecesAsString());
                             }
 
                         } else if (button.equals(clearButton)) {
