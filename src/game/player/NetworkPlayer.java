@@ -13,6 +13,11 @@ import client.Global;
  */
 public class NetworkPlayer extends GamePlayer {
 
+	@Override
+	public boolean hasAtLeastOneMovablePiece() {
+		return true; //for now
+	}
+
     @Override
     public Optional<Piece> getPiece(int x, int y) {
    

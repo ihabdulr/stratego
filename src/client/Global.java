@@ -1,6 +1,6 @@
 package client;
 
-import server.Server;
+import game.Board;
 
 /**
  * Created by Alek on 3/2/2018.
@@ -20,6 +20,10 @@ public class Global {
         return gameState;
     }
     public static void setGameState(GameState state) {
+        if(state.equals(GameState.GAME)) {
+            boardState = BoardState.SETUP;
+            Board.initialize();
+        }
         gameState = state;
     }
     public static BoardState getBoardState() {

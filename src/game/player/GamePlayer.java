@@ -1,5 +1,6 @@
 package game.player;
 
+import game.GameLogic;
 import game.Piece;
 
 import java.awt.*;
@@ -18,6 +19,9 @@ public abstract class GamePlayer {
     public java.util.List<Piece> getPieces() {
         return myPieces;
     }
+
+
+    public abstract boolean hasAtLeastOneMovablePiece();
 
     public void movePiece(Piece piece, Point destination) {
        for(Piece p: myPieces) {

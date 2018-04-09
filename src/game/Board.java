@@ -180,29 +180,34 @@ public class Board implements Screen {
         }
     }
 
-    public static boolean move(Piece start, Piece end) {
+    enum TurnState {VALID, INVALID, NO_MORE, FLAG_CAPTURED}
 
+    public static TurnState move(Piece start, Piece end) {
         //DO NOT FOR THE LOVE OF GOD USE .contains, IT WILL RETURN FALSE
         //BECAUSE .contains CHECKS FOR THE OBJECT ADDRESS
         //Alternatively use the getBoardPieceObjects() method
         if (GameLogic.getMovableTiles(start).stream().noneMatch(p ->
                 p.getPosition().equals(end.getPosition()) && p.getPieceType().equals(end.getPieceType())))
-            return false;
+            return TurnState.INVALID;
 
         //simple swap
         if (end.getPieceType().equals(Piece.PieceType.EMPTY)) {
             movePiece(start, end);
             selectedPiece = null;
-            return true;
+            return getCurrentPlayer().hasAtLeastOneMovablePiece() ? TurnState.VALID : TurnState.NO_MORE;
         }
+
 
         if (end.getPieceType().equals(Piece.PieceType.GENERIC)) {
-            GameLogic.attack(start, end.clone(enemyPlayer.getPiece(end.getPosition()).get().getPieceType()));
+            boolean flag = GameLogic.attack(start, end.clone(enemyPlayer.getPiece(end.getPosition()).get().getPieceType()));
             selectedPiece = null;
-            return true;
+            if (flag)
+                return TurnState.FLAG_CAPTURED;
+            return getCurrentPlayer().hasAtLeastOneMovablePiece() ? TurnState.VALID : TurnState.NO_MORE;
         }
 
-        return false;
+
+        return TurnState.INVALID;
     }
 
 
@@ -219,9 +224,17 @@ public class Board implements Screen {
                             }
                         } else if (selectedPiece != null) {
                             e.consume();
-                            if (move(selectedPiece, i)) {
+                            TurnState result = move(selectedPiece, i);
+                            if (result.equals(TurnState.VALID)) {
                                 Global.setBoardState(Global.BoardState.THEIR_TURN);
                                 ((AIPlayer) enemyPlayer).nextMove();
+                            } else if (result.equals(TurnState.NO_MORE)) {
+                                Global.setBoardState(Global.BoardState.GAME_LOSS);
+                            } else if (result.equals(TurnState.FLAG_CAPTURED)) {
+                                if (Global.getBoardState().equals(Global.BoardState.MY_TURN))
+                                    Global.setBoardState(Global.BoardState.GAME_WON);
+                                else
+                                    Global.setBoardState(Global.BoardState.GAME_LOSS);
                             }
                         }
                     } else if (Global.getBoardState().equals(Global.BoardState.SETUP)) {
@@ -287,10 +300,11 @@ public class Board implements Screen {
                         }
                     }
                 }
-            } else if (Global.isGameOver()) {
-                if (mainMenuButton.getBounds().contains(e.getPoint()) && mainMenuButton.isEnabled()) {
-                    Global.setGameState(Global.GameState.MENU);
-                }
+            }
+        } else { //game is over
+            if (mainMenuButton.getBounds().contains(e.getPoint()) && mainMenuButton.isEnabled()) {
+                Global.setGameState(Global.GameState.MENU);
+                Global.setBoardState(Global.BoardState.SETUP);
             }
         }
     }
@@ -327,6 +341,10 @@ public class Board implements Screen {
         g.drawString(button.getString(), button.getStringX(), button.getStringY());
     }
 
+    private String formatEnum(String name) {
+        return name.charAt(0) + name.toLowerCase().replace("_", " ").substring(1);
+    }
+
     public void paintScreen(Graphics g, ImageObserver o) {
         Graphics2D g2d = (Graphics2D) g;
         g.drawImage(Images.getImage("background_0"), 0, 0, o);
@@ -340,14 +358,14 @@ public class Board implements Screen {
                 if (piece.getPieceType() != Piece.PieceType.EMPTY) {
                     if (piece.getPieceType().equals(Piece.PieceType.GENERIC)) {
                         g.drawImage(Images.getImage("stone"), xOffset, yOffset, o);
-                    } else if(piece.getPieceType().getCombatValue() > -1 ) {
+                    } else if (piece.getPieceType().getCombatValue() > -1) {
                         g.drawImage(Images.getImage("wood"), xOffset, yOffset, o);
                         g.setColor(Color.BLACK);
                         g.drawString(String.valueOf(piece.getPieceType().getCombatValue()), xOffset + (TILE_SIZE - 10), yOffset + (TILE_SIZE - 10));
                         g.setColor(Color.WHITE);
                         g.drawString(String.valueOf(piece.getPieceType().getCombatValue()), xOffset + (TILE_SIZE - 9), yOffset + (TILE_SIZE - 9));
                     }
-                    if(piece.getPieceType().getSpriteIndex() > -1)
+                    if (piece.getPieceType().getSpriteIndex() > -1)
                         g.drawImage(Images.getImage(String.valueOf(piece.getPieceType().getSpriteIndex())), xOffset, yOffset, o);
                 } else if (Global.getBoardState().equals(Global.BoardState.SETUP)) {
                     if (y > 4) {
@@ -424,6 +442,12 @@ public class Board implements Screen {
                         Global.WIDTH - (Global.WIDTH / 4) + 45, 60 + (i * TILE_SIZE + 16), o);
                 g.drawString("x" + p.getValue(), Global.WIDTH - (Global.WIDTH / 4) + 45 + TILE_SIZE, 60 + (i * TILE_SIZE + 16) + 32);
                 ++i;
+            }
+
+            if (selectedPiece != null) {
+                g.setColor(Color.YELLOW);
+                g.setFont(titleFont);
+                g.drawString("Selected Piece: " + formatEnum(selectedPiece.getPieceType().name()), 15, 550);
             }
 
             if (Global.isGameOver()) {

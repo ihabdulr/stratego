@@ -7,7 +7,6 @@ import game.player.GamePlayer;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static game.Board.SIZE_X;
 import static game.Board.SIZE_Y;
@@ -18,7 +17,8 @@ import static game.Board.SIZE_Y;
 public class GameLogic {
 
 
-    public static void attack(Piece aPiece, Piece zPiece) {
+    //Returns true if the flag was captured
+    public static boolean attack(Piece aPiece, Piece zPiece) {
 
         Piece dPiece;
 
@@ -33,56 +33,43 @@ public class GameLogic {
 
         Animation.playAnimation(dPiece.getColumn(), dPiece.getRow(), dPiece.getPieceType().getSpriteIndex());
 
-        new ConditionalSleep(2000) {
-            @Override
-            public boolean condition() {
-                return !Animation.canAnimate();
-            }
 
-            @Override
-            public void call() {
-                if(dPiece.getPieceType().isPieceSpecial()) {
-                    switch(dPiece.getPieceType()) {
-                        case BOMB:
-                            if(aPiece.getPieceType().equals(Piece.PieceType.PRIVATE)) {
-                                Board.setPiece(dPiece.getColumn(), dPiece.getRow(), aPiece.clone());
-                                Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
-                                Board.addCapturedPiece(dPiece.getPieceType());
-                            } else {
-                                Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
-                                Board.addLostPiece(aPiece.getPieceType());
-                            }
-                            break;
-                        case FLAG:
-                            //This is for local only!
-                            if(Global.getBoardState().equals(Global.BoardState.MY_TURN))
-                                Global.setBoardState(Global.BoardState.GAME_WON);
-                            else
-                                Global.setBoardState(Global.BoardState.GAME_LOSS);
-                            break;
-                        default: //This shouldnt happen
-                            System.out.println("Error: Reached end of game logic for special piece");
-                            System.out.println("Piece 1: " + aPiece.getPieceType().name());
-                            System.out.println("Piece 2: " + dPiece.getPieceType().name());
-                    }
-                } else {
-                    if (aPiece.getPieceType().getCombatValue() == dPiece.getPieceType().getCombatValue()) {
-                        Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
-                        Board.setPiece(dPiece.getColumn(), dPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
-                        Board.addCapturedPiece(dPiece.getPieceType());
-                        Board.addLostPiece(aPiece.getPieceType());
-                    } else if (aPiece.getPieceType().getCombatValue() > dPiece.getPieceType().getCombatValue()) {
-                        Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
-                        Board.addLostPiece(aPiece.getPieceType());
-                    } else {
+        if (dPiece.getPieceType().isPieceSpecial()) {
+            switch (dPiece.getPieceType()) {
+                case BOMB:
+                    if (aPiece.getPieceType().equals(Piece.PieceType.BOMB_DEFUSER)) {
                         Board.setPiece(dPiece.getColumn(), dPiece.getRow(), aPiece.clone());
                         Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
                         Board.addCapturedPiece(dPiece.getPieceType());
+                    } else {
+                        Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+                        Board.addLostPiece(aPiece.getPieceType());
                     }
-                }
-            }
-        }.start();
+                    break;
+                case FLAG:
+                    return true;
 
+                default: //This shouldnt happen
+                    System.out.println("Error: Reached end of game logic for special piece");
+                    System.out.println("Piece 1: " + aPiece.getPieceType().name());
+                    System.out.println("Piece 2: " + dPiece.getPieceType().name());
+            }
+        } else {
+            if (aPiece.getPieceType().getCombatValue() == dPiece.getPieceType().getCombatValue()) {
+                Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+                Board.setPiece(dPiece.getColumn(), dPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+                Board.addCapturedPiece(dPiece.getPieceType());
+                Board.addLostPiece(aPiece.getPieceType());
+            } else if (aPiece.getPieceType().getCombatValue() > dPiece.getPieceType().getCombatValue()) {
+                Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+                Board.addLostPiece(aPiece.getPieceType());
+            } else {
+                Board.setPiece(dPiece.getColumn(), dPiece.getRow(), aPiece.clone());
+                Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+                Board.addCapturedPiece(dPiece.getPieceType());
+            }
+        }
+        return false;
     }
 
     //TODO two different pools of generic
@@ -103,13 +90,12 @@ public class GameLogic {
                         else
                             p = GameLogic.getPiece(new Point(dx, dy), Board.getEnemyPlayer(), Board.getLocalPlayer());
 
-                        if (p.getPieceType().equals(Piece.PieceType.EMPTY) || p.getPieceType().equals(Piece.PieceType.GENERIC)) {
-                            pieces.add(p);
+                        if (!p.getPieceType().equals(Piece.PieceType.BLOCK))
+                            if (p.getPieceType().equals(Piece.PieceType.EMPTY) || p.getPieceType().equals(Piece.PieceType.GENERIC))
+                                pieces.add(p);
 
-
-                        }
                         if (!p.getPieceType().equals(Piece.PieceType.EMPTY)) {
-                           // System.out.println(p.getPieceType().name());
+                            // System.out.println(p.getPieceType().name());
                             break;
                         }
                     }

@@ -28,6 +28,11 @@ public class AIPlayer extends GamePlayer {
         }
     }
 
+    @Override
+    public boolean hasAtLeastOneMovablePiece() {
+        return true; //for now
+    }
+
 
     public boolean nextMove() {
         for(Piece piece : myPieces) {
@@ -40,7 +45,7 @@ public class AIPlayer extends GamePlayer {
                 return true;
             }
         }
-        System.out.println("Enemy does not have any moves available!");
+        Global.setBoardState(Global.BoardState.GAME_WON); //should use hasatleastonemovablepiece later
         return false;
     }
 

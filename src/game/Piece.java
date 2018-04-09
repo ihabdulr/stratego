@@ -11,8 +11,9 @@ public class Piece {
     //Generic is used for an enemy piece that we cant see
     //Block is used for part of the map that we cant move to
     public enum PieceType {
-        KING(1, 1, true, false), QUEEN(2, 6, true, false), SERGEANT(7, 7, true, false), PRIVATE(8, 8, true, false),
-        SCOUT(9, 9, true, false), EMPTY(-1, -1, false, false), GENERIC(-1, -1, false, false), BLOCK(-1, 12, false, false),
+        SKULL_KING(1, 1, true, false), SKULL_PRINCE(2, 2, true, false), MINOTAUR(3, 3, true, false), MINION(4, 4, true, false),
+        BOMB_DEFUSER(5, 5, true, false), SCOUT(6, 6, true, false), EMPTY(-1, -1, false, false),
+        GENERIC(-1, -1, false, false), BLOCK(-1, 12, false, false),
         BOMB(-1, 10, false, true), FLAG(-1, 11, false, true);
 
         int combatValue, spriteIndex;
