@@ -41,8 +41,8 @@ public class Board implements Screen {
     private BoardButton loadButton = new BoardButton((Global.WIDTH / 2) + 32, 232, (Global.WIDTH / 2) - 64, 48, "Load Setup");
     private BoardButton saveButton = new BoardButton((Global.WIDTH / 2) + 32, 328, (Global.WIDTH / 2) - 64, 48, "Save Setup");
     private BoardButton readyButton = new BoardButton((Global.WIDTH / 2) + 32, 424, (Global.WIDTH / 2) - 64, 48, "Ready");
-    private BoardButton mainMenuButton = new BoardButton((Global.WIDTH / 4) + 32, Global.HEIGHT/2,
-                                                         (Global.WIDTH/2)-64, 64, "Main Menu");
+    private BoardButton mainMenuButton = new BoardButton((Global.WIDTH / 4) + 32, Global.HEIGHT / 2,
+            (Global.WIDTH / 2) - 64, 64, "Main Menu");
 
 
     private java.util.List<BoardButton> setupButtons = Arrays.asList(
@@ -119,6 +119,10 @@ public class Board implements Screen {
         for (int x = 0; x < SIZE_X; ++x)
             for (int y = 0; y < SIZE_Y; ++y)
                 pieces[x][y] = new Piece(Piece.PieceType.EMPTY).setPosition(x, y);
+        pieces[3][3] = new Piece(Piece.PieceType.BLOCK).setPosition(3, 3);
+        pieces[3][4] = new Piece(Piece.PieceType.BLOCK).setPosition(3, 4);
+        pieces[4][3] = new Piece(Piece.PieceType.BLOCK).setPosition(4, 3);
+        pieces[4][4] = new Piece(Piece.PieceType.BLOCK).setPosition(4, 4);
     }
 
     private void autoFillBoard() {
@@ -203,7 +207,7 @@ public class Board implements Screen {
 
 
     public void processMousePressedEvent(MouseEvent e) {
-        if(!Global.isGameOver()) {
+        if (!Global.isGameOver()) {
             Stream.of(pieces).flatMap(Stream::of).forEach(i -> {
                 if (i.getBounds().contains(e.getPoint())) {
                     if (Global.getBoardState().equals(Global.BoardState.MY_TURN)) {
@@ -283,8 +287,8 @@ public class Board implements Screen {
                         }
                     }
                 }
-            } else if(Global.isGameOver()) {
-                if(mainMenuButton.getBounds().contains(e.getPoint()) && mainMenuButton.isEnabled()) {
+            } else if (Global.isGameOver()) {
+                if (mainMenuButton.getBounds().contains(e.getPoint()) && mainMenuButton.isEnabled()) {
                     Global.setGameState(Global.GameState.MENU);
                 }
             }
@@ -336,14 +340,15 @@ public class Board implements Screen {
                 if (piece.getPieceType() != Piece.PieceType.EMPTY) {
                     if (piece.getPieceType().equals(Piece.PieceType.GENERIC)) {
                         g.drawImage(Images.getImage("stone"), xOffset, yOffset, o);
-                    } else {
+                    } else if(piece.getPieceType().getCombatValue() > -1 ) {
                         g.drawImage(Images.getImage("wood"), xOffset, yOffset, o);
-                        g.drawImage(Images.getImage(String.valueOf(piece.getPieceType().getSpriteIndex())), xOffset, yOffset, o);
                         g.setColor(Color.BLACK);
                         g.drawString(String.valueOf(piece.getPieceType().getCombatValue()), xOffset + (TILE_SIZE - 10), yOffset + (TILE_SIZE - 10));
                         g.setColor(Color.WHITE);
                         g.drawString(String.valueOf(piece.getPieceType().getCombatValue()), xOffset + (TILE_SIZE - 9), yOffset + (TILE_SIZE - 9));
                     }
+                    if(piece.getPieceType().getSpriteIndex() > -1)
+                        g.drawImage(Images.getImage(String.valueOf(piece.getPieceType().getSpriteIndex())), xOffset, yOffset, o);
                 } else if (Global.getBoardState().equals(Global.BoardState.SETUP)) {
                     if (y > 4) {
                         g.setColor(yellowTransparent2);
@@ -421,10 +426,10 @@ public class Board implements Screen {
                 ++i;
             }
 
-            if(Global.isGameOver()) {
+            if (Global.isGameOver()) {
                 g.setColor(blackTransparent);
-                g.fillRect(0,0,Global.WIDTH,Global.HEIGHT);
-                g.fillRect(Global.WIDTH / 4, Global.HEIGHT/4, Global.WIDTH/2, Global.HEIGHT/2);
+                g.fillRect(0, 0, Global.WIDTH, Global.HEIGHT);
+                g.fillRect(Global.WIDTH / 4, Global.HEIGHT / 4, Global.WIDTH / 2, Global.HEIGHT / 2);
                 g.setColor(Color.YELLOW);
                 g.drawString(Global.getBoardState().name().replace("_", " ") + "!",
                         465, 250);

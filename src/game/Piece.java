@@ -11,21 +11,22 @@ public class Piece {
     //Generic is used for an enemy piece that we cant see
     //Block is used for part of the map that we cant move to
     public enum PieceType {
-        KING(1, 1, true), QUEEN(2, 6, true), SERGEANT(7, 7, true), PRIVATE(8, 8, true),
-        SCOUT(9, 9, true), EMPTY(-1, 99, false), GENERIC(-1, 99, false), BLOCK(1, 99, false),
-        BOMB(-1, 100, false), FLAG(1, 100, false);
+        KING(1, 1, true, false), QUEEN(2, 6, true, false), SERGEANT(7, 7, true, false), PRIVATE(8, 8, true, false),
+        SCOUT(9, 9, true, false), EMPTY(-1, -1, false, false), GENERIC(-1, -1, false, false), BLOCK(-1, 12, false, false),
+        BOMB(-1, 10, false, true), FLAG(-1, 11, false, true);
 
         int combatValue, spriteIndex;
-        boolean selectable;
+        boolean selectable, special;
 
-        PieceType(int combatValue, int spriteIndex, boolean selectable) {
+        PieceType(int combatValue, int spriteIndex, boolean selectable, boolean special) {
             this.combatValue = combatValue;
             this.spriteIndex = spriteIndex;
             this.selectable = selectable;
+            this.special = special;
         }
 
         public boolean isPieceSpecial() {
-            return combatValue == 100;
+            return special;
         }
 
         public int getCombatValue() {

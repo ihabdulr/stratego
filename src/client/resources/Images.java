@@ -22,6 +22,9 @@ public class Images {
         loadImage("7.png");
         loadImage("8.png");
         loadImage("9.png");
+        loadImage("10.png");
+        loadImage("11.png");
+        loadImage("12.png");
         loadImage("wood.png");
         loadImage("stone.png");
         loadImage("closeicon.png");
