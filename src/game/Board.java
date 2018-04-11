@@ -68,6 +68,10 @@ public class Board implements Screen {
         return Global.getBoardState().equals(Global.BoardState.MY_TURN) ? localPlayer : enemyPlayer;
     }
 
+    public static GamePlayer getCurrentOpposingPlayer() {
+        return Global.getBoardState().equals(Global.BoardState.MY_TURN) ? enemyPlayer : localPlayer;
+    }
+
     public static void setPieces(Piece[][] newPieces) {
         pieces = newPieces;
     }
@@ -182,14 +186,18 @@ public class Board implements Screen {
 
     enum TurnState {VALID, INVALID, NO_MORE, FLAG_CAPTURED}
 
-    public static TurnState move(Piece start, Piece end) {
+
+
+    public static TurnState move(Piece start, Piece end2) {
         //DO NOT FOR THE LOVE OF GOD USE .contains, IT WILL RETURN FALSE
         //BECAUSE .contains CHECKS FOR THE OBJECT ADDRESS
         //Alternatively use the getBoardPieceObjects() method
-        if (GameLogic.getMovableTiles(start).stream().noneMatch(p ->
-                p.getPosition().equals(end.getPosition()) && p.getPieceType().equals(end.getPieceType())))
-            return TurnState.INVALID;
 
+
+        Piece end = getPiece(end2.getColumn(), end2.getRow());
+
+
+        System.out.println("Moving piece " + start.getPieceType() + " to " + end.getPieceType());
         //simple swap
         if (end.getPieceType().equals(Piece.PieceType.EMPTY)) {
             movePiece(start, end);

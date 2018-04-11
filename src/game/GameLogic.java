@@ -20,6 +20,7 @@ public class GameLogic {
     //Returns true if the flag was captured
     public static boolean attack(Piece aPiece, Piece zPiece) {
 
+        /*
         Piece dPiece;
 
         //side 0 = aPiece = enemy, side 1 = dPiece = enemy
@@ -30,6 +31,12 @@ public class GameLogic {
             dPiece = Board.getEnemyPlayer().getPiece(aPiece.getColumn(), aPiece.getRow()).get();
         else
             dPiece = Board.getEnemyPlayer().getPiece(zPiece.getColumn(), zPiece.getRow()).get();
+
+        */
+
+        Piece dPiece = Board.getEnemyPlayer().getPiece(zPiece.getPosition()).get();
+
+
 
         Animation.playAnimation(dPiece.getColumn(), dPiece.getRow(), dPiece.getPieceType().getSpriteIndex());
 
@@ -56,16 +63,33 @@ public class GameLogic {
             }
         } else {
             if (aPiece.getPieceType().getCombatValue() == dPiece.getPieceType().getCombatValue()) {
-                Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
-                Board.setPiece(dPiece.getColumn(), dPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+
+                //Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+                //Board.setPiece(dPiece.getColumn(), dPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+
+                Board.getCurrentPlayer().removePiece(aPiece);
+                Board.getCurrentOpposingPlayer().removePiece(aPiece);
+                System.out.println("Attacked an opponent with the same number");
+
                 Board.addCapturedPiece(dPiece.getPieceType());
                 Board.addLostPiece(aPiece.getPieceType());
             } else if (aPiece.getPieceType().getCombatValue() > dPiece.getPieceType().getCombatValue()) {
-                Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+
+                System.out.println("Attacked an opponent with a lower number");
+                Board.getCurrentPlayer().removePiece(aPiece);
+                //Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+
                 Board.addLostPiece(aPiece.getPieceType());
+
+
             } else {
-                Board.setPiece(dPiece.getColumn(), dPiece.getRow(), aPiece.clone());
-                Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+               // Board.setPiece(dPiece.getColumn(), dPiece.getRow(), aPiece.clone());
+               // Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+
+                System.out.println("Attacked an opponent with a higher number");
+                Board.getCurrentOpposingPlayer().removePiece(dPiece);
+                Board.getCurrentPlayer().movePiece(aPiece, dPiece);
+
                 Board.addCapturedPiece(dPiece.getPieceType());
             }
         }
@@ -76,6 +100,8 @@ public class GameLogic {
     public static java.util.List<Piece> getMovableTiles(Piece piece) {
         java.util.List<Piece> pieces = new ArrayList<Piece>();
         if (piece != null) {
+            if(piece.getPieceType().getCombatValue() == -1)
+                return pieces;
             int mx = piece.getColumn();
             int my = piece.getRow();
             for (Board.Direction dir : Board.Direction.values()) {

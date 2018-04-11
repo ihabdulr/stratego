@@ -44,6 +44,14 @@ public class Piece {
 
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Piece) {
+            return ((Piece) obj).col == col && ((Piece) obj).row == row;
+        }
+        return false;
+    }
+
     private PieceType pieceType = PieceType.EMPTY;
     private int col, row;
 

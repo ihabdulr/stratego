@@ -1,5 +1,6 @@
 package game.player;
 
+import game.Board;
 import game.Piece;
 import game.SaveLoad;
 import server.Packets;
@@ -33,6 +34,15 @@ public class NetworkPlayer extends GamePlayer {
         return serverRequest1 == null ? Optional.empty() : Optional.of(serverRequest1);
 
     }
+	@Override
+	public boolean removePiece(Piece piece) {
+		return true;
+	}
 
+	@Override
+	public boolean movePiece(Piece dPiece, Piece aPiece) {
+
+		return true;
+	}
 
 }

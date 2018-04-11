@@ -23,6 +23,10 @@ public abstract class GamePlayer {
 
     public abstract boolean hasAtLeastOneMovablePiece();
 
+    public abstract boolean removePiece(Piece piece);
+
+    public abstract boolean movePiece(Piece dPiece, Piece aPiece);
+
     public void movePiece(Piece piece, Point destination) {
        for(Piece p: myPieces) {
            if(p.getPieceType().equals(piece.getPieceType()) && p.getPosition().equals(piece.getPosition())) {
@@ -32,6 +36,7 @@ public abstract class GamePlayer {
            }
        }
     }
+
 
     public java.util.List<Piece> getSanitizedPieces() {
         java.util.List<Piece> returnPieces = new ArrayList<>();

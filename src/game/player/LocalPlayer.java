@@ -23,4 +23,18 @@ public class LocalPlayer extends GamePlayer {
         return getPieces().stream().anyMatch(p -> !GameLogic.getMovableTiles(p).isEmpty());
     }
 
+    @Override
+    public boolean removePiece(Piece piece) {
+        System.out.println("Removing Local Piece");
+        Board.setPiece(piece.getColumn(), piece.getRow(), new Piece(Piece.PieceType.EMPTY));
+        return true;
+    }
+
+    @Override
+    public boolean movePiece(Piece dPiece, Piece aPiece) {
+        Board.setPiece(dPiece.getColumn(), dPiece.getRow(), aPiece.clone());
+        Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+        return true;
+    }
+
 }
