@@ -86,21 +86,6 @@ public class Board implements Screen {
         });
     }
 
-    public static java.util.List<Piece> getBoardPieceObjects(java.util.List<Piece> alias) {
-        java.util.List<Piece> returnPieces = new ArrayList<Piece>();
-        for (Piece p : alias) {
-            Optional<Piece> piece = Stream.of(pieces).flatMap(Stream::of).filter(i -> i.getPieceType().equals(p.getPieceType()) &&
-                    i.getPosition().equals(p.getPosition())).findFirst();
-            if (piece.isPresent()) {
-                returnPieces.add(piece.get());
-            } else {
-                System.out.println("FAILED TO CONVERT!");
-            }
-        }
-        return returnPieces;
-    }
-
-
     private SetupContainer setupContainer = new SetupContainer(15, 64 * SIZE_Y + 48, Global.WIDTH - 31, 160);
 
     static Piece[][] pieces = new Piece[SIZE_X][SIZE_Y];
@@ -184,17 +169,18 @@ public class Board implements Screen {
         }
     }
 
-    enum TurnState {VALID, INVALID, NO_MORE, FLAG_CAPTURED}
+    public enum TurnState {VALID, INVALID, NO_MORE, FLAG_CAPTURED}
 
 
 
     public static TurnState move(Piece start, Piece end2) {
-        //DO NOT FOR THE LOVE OF GOD USE .contains, IT WILL RETURN FALSE
-        //BECAUSE .contains CHECKS FOR THE OBJECT ADDRESS
-        //Alternatively use the getBoardPieceObjects() method
+
 
 
         Piece end = getPiece(end2.getColumn(), end2.getRow());
+
+        System.out.println("abc: " + end2.getPieceType().name());
+        System.out.println("xyz: " + end.getPieceType().name());
 
 
         System.out.println("Moving piece " + start.getPieceType() + " to " + end.getPieceType());
@@ -206,8 +192,9 @@ public class Board implements Screen {
         }
 
 
-        if (end.getPieceType().equals(Piece.PieceType.GENERIC)) {
-            boolean flag = GameLogic.attack(start, end.clone(enemyPlayer.getPiece(end.getPosition()).get().getPieceType()));
+
+        if (getCurrentOpposingPlayer().getPieces().contains(end)) {
+            boolean flag = GameLogic.attack(start, end);
             selectedPiece = null;
             if (flag)
                 return TurnState.FLAG_CAPTURED;
@@ -356,7 +343,7 @@ public class Board implements Screen {
     public void paintScreen(Graphics g, ImageObserver o) {
         Graphics2D g2d = (Graphics2D) g;
         g.drawImage(Images.getImage("background_0"), 0, 0, o);
-        java.util.List<Piece> pieces = Board.getBoardPieceObjects(GameLogic.getMovableTiles(selectedPiece));
+        java.util.List<Piece> pieces = GameLogic.getMovableTiles(selectedPiece);
         g2d.setColor(Color.WHITE);
         for (int x = 0; x < Board.SIZE_X; ++x) {
             for (int y = 0; y < Board.SIZE_Y; ++y) {

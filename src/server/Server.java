@@ -117,11 +117,13 @@ public class Server implements Runnable {
 							  
 							  s.handlePacket(Packets.P_INSETUP, true);
 						  }
+
+
 						  for (int i = 0; i < multiplayerGames.size(); i++) {
 							  GameSession bs = multiplayerGames.get(i);
 							  if (bs.getPlayer1().isReady()) {
 								  if (bs.getPlayer2().isReady()) {
-									  s.handlePacket(Packets.P_INSETUP, true);
+									  //s.handlePacket(Packets.P_INSETUP, true);
 									  bs.getPlayer1().setReady(false);
 									  bs.getPlayer2().setReady(false);
 								  }

@@ -20,22 +20,7 @@ public class GameLogic {
     //Returns true if the flag was captured
     public static boolean attack(Piece aPiece, Piece zPiece) {
 
-        /*
-        Piece dPiece;
-
-        //side 0 = aPiece = enemy, side 1 = dPiece = enemy
-        int side = aPiece.getPieceType().equals(Piece.PieceType.GENERIC) ? 0 : 1;
-
-        //Assume isPresent for now
-        if (side == 0)
-            dPiece = Board.getEnemyPlayer().getPiece(aPiece.getColumn(), aPiece.getRow()).get();
-        else
-            dPiece = Board.getEnemyPlayer().getPiece(zPiece.getColumn(), zPiece.getRow()).get();
-
-        */
-
-        Piece dPiece = Board.getEnemyPlayer().getPiece(zPiece.getPosition()).get();
-
+        Piece dPiece = Board.getCurrentOpposingPlayer().getPiece(zPiece);
 
 
         Animation.playAnimation(dPiece.getColumn(), dPiece.getRow(), dPiece.getPieceType().getSpriteIndex());
@@ -68,18 +53,19 @@ public class GameLogic {
                 //Board.setPiece(dPiece.getColumn(), dPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
 
                 Board.getCurrentPlayer().removePiece(aPiece);
-                Board.getCurrentOpposingPlayer().removePiece(aPiece);
+                Board.getCurrentOpposingPlayer().removePiece(dPiece);
                 System.out.println("Attacked an opponent with the same number");
 
                 Board.addCapturedPiece(dPiece.getPieceType());
                 Board.addLostPiece(aPiece.getPieceType());
             } else if (aPiece.getPieceType().getCombatValue() > dPiece.getPieceType().getCombatValue()) {
+                System.out.println(aPiece.getPieceType().name() +", " + dPiece.getPieceType().name());
 
                 System.out.println("Attacked an opponent with a lower number");
                 Board.getCurrentPlayer().removePiece(aPiece);
                 //Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
 
-                Board.addLostPiece(aPiece.getPieceType());
+
 
 
             } else {
@@ -90,7 +76,7 @@ public class GameLogic {
                 Board.getCurrentOpposingPlayer().removePiece(dPiece);
                 Board.getCurrentPlayer().movePiece(aPiece, dPiece);
 
-                Board.addCapturedPiece(dPiece.getPieceType());
+
             }
         }
         return false;
@@ -110,20 +96,14 @@ public class GameLogic {
                     int dy = dir.equals(Board.Direction.UP) || dir.equals(Board.Direction.DOWN) ? my + (dir.getOffset() * (i + 1)) : my;
                     if (dx >= 0 && dy >= 0 && dx < SIZE_X && dy < SIZE_Y) {
 
-                        Piece p;
-                        if (Global.getBoardState().equals(Global.BoardState.MY_TURN))
-                            p = GameLogic.getPiece(new Point(dx, dy), Board.getLocalPlayer(), Board.getEnemyPlayer());
-                        else
-                            p = GameLogic.getPiece(new Point(dx, dy), Board.getEnemyPlayer(), Board.getLocalPlayer());
+                        Piece p = Board.getPiece(dx, dy);
 
-                        if (!p.getPieceType().equals(Piece.PieceType.BLOCK))
-                            if (p.getPieceType().equals(Piece.PieceType.EMPTY) || p.getPieceType().equals(Piece.PieceType.GENERIC))
+                         if (p.getPieceType().equals(Piece.PieceType.EMPTY) || Board.getCurrentOpposingPlayer().hasPiece(p))
                                 pieces.add(p);
 
-                        if (!p.getPieceType().equals(Piece.PieceType.EMPTY)) {
-                            // System.out.println(p.getPieceType().name());
+                        if (!p.getPieceType().equals(Piece.PieceType.EMPTY))
                             break;
-                        }
+
                     }
 
                 }

@@ -104,9 +104,9 @@ public class Network implements Runnable {
         }
     }
 
-    public void handleIncomingPacket(String s) { 
+    public void handleIncomingPacket(String s) {
+        System.out.println("Received: " + s);
     	switch (s) {
-    	
 	    	case Packets.P_INSETUP: 
 	    		Global.setBoardState(Global.BoardState.SETUP);
 	    		Global.setGameState(GameState.GAME);

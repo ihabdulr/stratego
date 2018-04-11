@@ -15,7 +15,10 @@ public class LocalPlayer extends GamePlayer {
 
     @Override
     public java.util.List<Piece> getPieces() {
-        return Stream.of(Board.getPieces()).flatMap(Stream::of).filter(i -> !i.getPieceType().equals(Piece.PieceType.GENERIC)).collect(Collectors.toList());
+        return Stream.of(Board.getPieces()).flatMap(Stream::of).filter(i ->
+                i.getPieceType().isSelectable() ||
+                        i.getPieceType().isPieceSpecial()
+        ).collect(Collectors.toList());
     }
 
     @Override
@@ -27,6 +30,7 @@ public class LocalPlayer extends GamePlayer {
     public boolean removePiece(Piece piece) {
         System.out.println("Removing Local Piece");
         Board.setPiece(piece.getColumn(), piece.getRow(), new Piece(Piece.PieceType.EMPTY));
+        Board.addLostPiece(piece.getPieceType());
         return true;
     }
 

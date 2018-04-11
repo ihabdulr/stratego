@@ -18,7 +18,7 @@ public class AIPlayer extends GamePlayer {
 
 
     public AIPlayer() {
-       this(1);
+        this(1);
     }
 
     public AIPlayer(int mode) {
@@ -48,11 +48,17 @@ public class AIPlayer extends GamePlayer {
 
     @Override
     public boolean removePiece(Piece piece) {
-        //System.out.println("Removing AI Piece: " + myPieces.indexOf(piece));
+        System.out.println("Removing AI Piece: " + piece.getPieceType().name());
+        Board.addCapturedPiece(piece.getPieceType());
         Optional<Piece> p = myPieces.stream().filter(i -> i.getPosition().equals(piece.getPosition())).findAny();
-        if(p.isPresent()) {
+        if (p.isPresent()) {
             Board.setPiece(piece.getColumn(), piece.getRow(), new Piece(Piece.PieceType.EMPTY));
-            return myPieces.remove(p.get());
+            System.out.println("Size: " + myPieces.size());
+            myPieces.remove(p.get());
+            System.out.println("Size: " + myPieces.size());
+
+            System.out.println("f: " + hasAtLeastOneMovablePiece());
+            return true;
         } else {
             System.out.println("Error finding piece in AI");
             return false;
@@ -61,15 +67,16 @@ public class AIPlayer extends GamePlayer {
 
     @Override
     public boolean movePiece(Piece aPiece, Piece dPiece) {
-        Board.setPiece(dPiece.getColumn(), dPiece.getRow(), aPiece.clone());
+        System.out.println("Moving my piece");
+        Board.setPiece(dPiece.getColumn(), dPiece.getRow(), dPiece.setPieceType(Piece.PieceType.GENERIC));
         Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
         Optional<Piece> p = myPieces.stream().filter(i -> i.getPosition().equals(aPiece.getPosition())).findAny();
-        if(p.isPresent()) {
+        if (p.isPresent()) {
             System.out.println("good");
             myPieces.get(myPieces.indexOf(p.get())).setPosition(dPiece.getColumn(), dPiece.getRow());
             return true;
         }
-        System.out.println("Failed to move " +dPiece.getPieceType().name() +" to " + aPiece.getPosition().toString());
+        System.out.println("Failed to move " + dPiece.getPieceType().name() + " to " + aPiece.getPosition().toString());
         return false;
     }
 
@@ -77,15 +84,19 @@ public class AIPlayer extends GamePlayer {
     public boolean nextMove() {
         for (Piece piece : myPieces) {
             java.util.List<Piece> available = GameLogic.getMovableTiles(piece);
-            //System.out.println(piece.getPieceType().name() +", available: " + available.size());
             if (!available.isEmpty()) {
-                Board.move(piece, available.get(0));
-                Global.setBoardState(Global.BoardState.MY_TURN);
+                Board.TurnState state = Board.move(piece, available.get(0));
                 System.out.println("Enemy moving: " + piece.getPosition() + " to " + available.get(0).getPosition());
-                return true;
+                if(state.equals(Board.TurnState.VALID)) {
+                    Global.setBoardState(Global.BoardState.MY_TURN);
+                    return true;
+                }
+                else
+                    Global.setBoardState(Global.BoardState.GAME_WON);
+
             }
         }
-        Global.setBoardState(Global.BoardState.GAME_WON); //should use hasatleastonemovablepiece later
+        Global.setBoardState(Global.BoardState.GAME_WON);
         return false;
     }
 
