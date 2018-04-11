@@ -36,12 +36,13 @@ public class Board implements Screen {
     private Color yellowTransparent = new Color(155, 155, 0, 128);
     private Color yellowTransparent2 = new Color(155, 155, 0, 64);
 
-    private BoardButton autoFillButton = new BoardButton((Global.WIDTH / 2) + 32, 40, (Global.WIDTH / 2) - 64, 48, "Auto-Fill");
-    private BoardButton clearButton = new BoardButton((Global.WIDTH / 2) + 32, 136, (Global.WIDTH / 2) - 64, 48, "Clear Board");
-    private BoardButton loadButton = new BoardButton((Global.WIDTH / 2) + 32, 232, (Global.WIDTH / 2) - 64, 48, "Load Setup");
-    private BoardButton saveButton = new BoardButton((Global.WIDTH / 2) + 32, 328, (Global.WIDTH / 2) - 64, 48, "Save Setup");
-    private BoardButton readyButton = new BoardButton((Global.WIDTH / 2) + 32, 424, (Global.WIDTH / 2) - 64, 48, "Ready");
-    private BoardButton mainMenuButton = new BoardButton((Global.WIDTH / 4) + 32, Global.HEIGHT / 2,
+    private static BoardButton autoFillButton = new BoardButton((Global.WIDTH / 2) + 32, 40, (Global.WIDTH / 2) - 64, 48, "Auto-Fill");
+    private static BoardButton clearButton = new BoardButton((Global.WIDTH / 2) + 32, 136, (Global.WIDTH / 2) - 64, 48, "Clear Board");
+    private static BoardButton loadButton = new BoardButton((Global.WIDTH / 2) + 32, 232, (Global.WIDTH / 2) - 64, 48, "Load Setup");
+    private static BoardButton saveButton = new BoardButton((Global.WIDTH / 2) + 32, 328, (Global.WIDTH / 2) - 64, 48, "Save Setup");
+    private static BoardButton readyButton = new BoardButton((Global.WIDTH / 2) + 32, 424, (Global.WIDTH / 2) - 64, 48, "Ready");
+    private BoardButton exitMainButton = new BoardButton(64, 640, (Global.WIDTH / 2) - 128, 48, "Exit to Main Menu");
+    private static BoardButton mainMenuButton = new BoardButton((Global.WIDTH / 4) + 32, Global.HEIGHT / 2,
             (Global.WIDTH / 2) - 64, 64, "Main Menu");
 
 
@@ -86,7 +87,7 @@ public class Board implements Screen {
         });
     }
 
-    private SetupContainer setupContainer = new SetupContainer(15, 64 * SIZE_Y + 48, Global.WIDTH - 31, 160);
+    private static SetupContainer setupContainer = new SetupContainer(15, 64 * SIZE_Y + 48, Global.WIDTH - 31, 160);
 
     static Piece[][] pieces = new Piece[SIZE_X][SIZE_Y];
 
@@ -108,10 +109,16 @@ public class Board implements Screen {
         for (int x = 0; x < SIZE_X; ++x)
             for (int y = 0; y < SIZE_Y; ++y)
                 pieces[x][y] = new Piece(Piece.PieceType.EMPTY).setPosition(x, y);
+        //Rocks
         pieces[3][3] = new Piece(Piece.PieceType.BLOCK).setPosition(3, 3);
         pieces[3][4] = new Piece(Piece.PieceType.BLOCK).setPosition(3, 4);
         pieces[4][3] = new Piece(Piece.PieceType.BLOCK).setPosition(4, 3);
         pieces[4][4] = new Piece(Piece.PieceType.BLOCK).setPosition(4, 4);
+        setupContainer.initialize();
+        autoFillButton.setEnabled(true);
+        readyButton.setEnabled(false);
+        saveButton.setEnabled(false);
+        loadButton.setEnabled(true);
     }
 
     private void autoFillBoard() {
@@ -129,14 +136,9 @@ public class Board implements Screen {
         readyButton.setEnabled(true);
     }
 
-
-    //Returns a piece in the context of Local Playerflatmap
     public static Piece getPiece(int col, int row) {
-        //  if (Global.getBoardState().equals(Global.BoardState.SETUP))
         return pieces[col][row];
-        //   return GameLogic.getPiece(new Point(col, row), Board.getLocalPlayer(), Board.getEnemyPlayer());
     }
-
 
     public static void setPiece(int col, int row, Piece piece) {
         pieces[col][row] = piece.setPosition(col, row);
@@ -148,7 +150,6 @@ public class Board implements Screen {
             Board.getEnemyPlayer().movePiece(piece, dest.getPosition());
         pieces[dest.getColumn()][dest.getRow()] = pieces[piece.getColumn()][piece.getRow()].clone().setPosition(dest.getPosition());
         pieces[piece.getColumn()][piece.getRow()] = dest.clone().setPosition(piece.getPosition());
-
     }
 
     public static void addCapturedPiece(Piece.PieceType pieceType) {
@@ -171,27 +172,16 @@ public class Board implements Screen {
 
     public enum TurnState {VALID, INVALID, NO_MORE, FLAG_CAPTURED}
 
-
-
     public static TurnState move(Piece start, Piece end2) {
-
-
 
         Piece end = getPiece(end2.getColumn(), end2.getRow());
 
-        System.out.println("abc: " + end2.getPieceType().name());
-        System.out.println("xyz: " + end.getPieceType().name());
-
-
-        System.out.println("Moving piece " + start.getPieceType() + " to " + end.getPieceType());
         //simple swap
         if (end.getPieceType().equals(Piece.PieceType.EMPTY)) {
             movePiece(start, end);
             selectedPiece = null;
             return getCurrentPlayer().hasAtLeastOneMovablePiece() ? TurnState.VALID : TurnState.NO_MORE;
         }
-
-
 
         if (getCurrentOpposingPlayer().getPieces().contains(end)) {
             boolean flag = GameLogic.attack(start, end);
@@ -200,7 +190,6 @@ public class Board implements Screen {
                 return TurnState.FLAG_CAPTURED;
             return getCurrentPlayer().hasAtLeastOneMovablePiece() ? TurnState.VALID : TurnState.NO_MORE;
         }
-
 
         return TurnState.INVALID;
     }
@@ -274,11 +263,6 @@ public class Board implements Screen {
 
                         } else if (button.equals(clearButton)) {
                             initialize();
-                            setupContainer.initialize();
-                            autoFillButton.setEnabled(true);
-                            readyButton.setEnabled(false);
-                            saveButton.setEnabled(false);
-                            loadButton.setEnabled(true);
                         } else if (button.equals(autoFillButton)) {
                             autoFillBoard();
                             autoFillButton.setEnabled(false);
@@ -295,6 +279,10 @@ public class Board implements Screen {
                         }
                     }
                 }
+            }
+            if (exitMainButton.getBounds().contains(e.getPoint()) && mainMenuButton.isEnabled()) {
+                Global.setGameState(Global.GameState.MENU);
+                Global.setBoardState(Global.BoardState.SETUP);
             }
         } else { //game is over
             if (mainMenuButton.getBounds().contains(e.getPoint()) && mainMenuButton.isEnabled()) {
@@ -319,6 +307,10 @@ public class Board implements Screen {
             } else {
                 mainMenuButton.setHighlighted(false);
             }
+        } else if (exitMainButton.getBounds().contains(e.getPoint())) {
+            exitMainButton.setHighlighted(true);
+        } else {
+            exitMainButton.setHighlighted(false);
         }
     }
 
@@ -444,6 +436,7 @@ public class Board implements Screen {
                 g.setFont(titleFont);
                 g.drawString("Selected Piece: " + formatEnum(selectedPiece.getPieceType().name()), 15, 550);
             }
+            g.drawString("Turn: " + (Global.getBoardState().equals(Global.BoardState.MY_TURN) ? "My Turn" : "Enemy turn"), 15, 575);
 
             if (Global.isGameOver()) {
                 g.setColor(blackTransparent);
@@ -453,6 +446,8 @@ public class Board implements Screen {
                 g.drawString(Global.getBoardState().name().replace("_", " ") + "!",
                         465, 250);
                 formatButton(g, mainMenuButton);
+            } else {
+                formatButton(g, exitMainButton);
             }
 
         }

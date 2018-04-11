@@ -67,12 +67,10 @@ public class AIPlayer extends GamePlayer {
 
     @Override
     public boolean movePiece(Piece aPiece, Piece dPiece) {
-        System.out.println("Moving my piece");
         Board.setPiece(dPiece.getColumn(), dPiece.getRow(), dPiece.setPieceType(Piece.PieceType.GENERIC));
         Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
         Optional<Piece> p = myPieces.stream().filter(i -> i.getPosition().equals(aPiece.getPosition())).findAny();
         if (p.isPresent()) {
-            System.out.println("good");
             myPieces.get(myPieces.indexOf(p.get())).setPosition(dPiece.getColumn(), dPiece.getRow());
             return true;
         }

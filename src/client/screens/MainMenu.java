@@ -126,7 +126,7 @@ public class MainMenu implements Screen {
             else
                 searchStatus = "Failed to connect to the server";
         } else if (button_ai.getBounds().contains(e.getPoint())
-                && (buttonPressed == null || buttonPressed == button_ai)) {
+                && (buttonPressed == null || buttonPressed.equals(button_ai))) {
             Global.setGameState(GameState.GAME);
             buttonPressed = button_ai;
             Clip clip = Sound.loadSound("buttonclickon");
@@ -135,11 +135,12 @@ public class MainMenu implements Screen {
         }
         // quit button
         else if (button_quit.getBounds().contains(e.getPoint())
-                && (buttonPressed == null || buttonPressed == button_quit)) {
+                && (buttonPressed == null || buttonPressed.equals(button_quit))) {
+            System.out.println("test");
             System.exit(0);
         }
         // close button on "searching for player" box
-        else if (closeButton.getBounds().contains(e.getPoint()) && (buttonPressed == button_pvp)) {
+        else if (closeButton.getBounds().contains(e.getPoint()) && (buttonPressed.equals(button_pvp))) {
             Clip clip = Sound.loadSound("buttonclickoff");
             clip.setMicrosecondPosition(0);
             clip.start();
