@@ -119,6 +119,9 @@ public class Board implements Screen {
         readyButton.setEnabled(false);
         saveButton.setEnabled(false);
         loadButton.setEnabled(true);
+        selectedPiece = null;
+        selectedTile = null;
+        selectedButton = null;
     }
 
     private void autoFillBoard() {
@@ -280,7 +283,7 @@ public class Board implements Screen {
                     }
                 }
             }
-            if (exitMainButton.getBounds().contains(e.getPoint()) && mainMenuButton.isEnabled()) {
+            else if (exitMainButton.getBounds().contains(e.getPoint()) && mainMenuButton.isEnabled()) {
                 Global.setGameState(Global.GameState.MENU);
                 Global.setBoardState(Global.BoardState.SETUP);
             }

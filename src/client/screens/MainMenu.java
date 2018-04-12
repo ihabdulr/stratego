@@ -22,7 +22,9 @@ public class MainMenu implements Screen {
     public static MenuButton buttonHovered = null;
     public Color hoverColor = new Color(19, 78, 17, 80); // Used for hovering
     public Color darkGreen = new Color(10, 40, 8, 80);
+    public Color blackTransparent = new Color(0, 0, 0, 225);
     private String searchStatus = "";
+    Font pvpTextFont = new Font("Sans-Serif", Font.PLAIN, 15);
 
     public void processMouseMovedEvent(MouseEvent e) {
         buttonHovered = null;
@@ -39,6 +41,7 @@ public class MainMenu implements Screen {
 
 
     Font font = new Font("Sans-Serif", Font.BOLD, 25);
+
     public void paintScreen(Graphics g, ImageObserver o) {
 
         button_pvp.setFontMetrics(g.getFontMetrics(font));
@@ -75,7 +78,7 @@ public class MainMenu implements Screen {
                     (int) button_quit.getHeight());
         }
 
-        
+
         g2d.setColor(Color.BLACK);
         g2d.setFont(font);
         g2d.drawString(button_pvp.getText(), button_pvp.getStringX(), button_pvp.getStringY());
@@ -83,9 +86,9 @@ public class MainMenu implements Screen {
         g2d.drawString(button_quit.getText(), button_quit.getStringX(), button_quit.getStringY());
 
         g2d.setColor(Color.WHITE);
-        g2d.drawString(button_pvp.getText(), button_pvp.getStringX() + 2, button_pvp.getStringY()+ 2);
-        g2d.drawString(button_ai.getText(), button_ai.getStringX()+ 2, button_ai.getStringY()+ 2);
-        g2d.drawString(button_quit.getText(), button_quit.getStringX()+ 2, button_quit.getStringY()+ 2);
+        g2d.drawString(button_pvp.getText(), button_pvp.getStringX() + 2, button_pvp.getStringY() + 2);
+        g2d.drawString(button_ai.getText(), button_ai.getStringX() + 2, button_ai.getStringY() + 2);
+        g2d.drawString(button_quit.getText(), button_quit.getStringX() + 2, button_quit.getStringY() + 2);
 
         // To draw an image, we use ImageObserver like this:
         // g2d.drawImage(Images.loadImage("test.png"), 50, 175, o);
@@ -95,10 +98,10 @@ public class MainMenu implements Screen {
 
             MenuButton searchMenu = new MenuButton(searchStatus, 350, 375, 300, 200);
             g2d.setFont(new Font("Sans-Serif", Font.PLAIN, 15));
-            g2d.setColor(Color.BLUE);
+            g2d.setColor(blackTransparent);
             g2d.fillRect((int) searchMenu.getX(), (int) searchMenu.getY(), (int) searchMenu.getWidth(),
                     (int) searchMenu.getHeight());
-            searchMenu.setFontMetrics(g.getFontMetrics(new Font("Sans-Serif", Font.PLAIN, 15)));
+            searchMenu.setFontMetrics(g.getFontMetrics(pvpTextFont));
             g2d.setColor(Color.WHITE);
             searchStatus = "Searching for a player...";
             g2d.drawString(searchStatus, searchMenu.getStringX(), searchMenu.getStringY());
@@ -114,14 +117,14 @@ public class MainMenu implements Screen {
 
     public void processMousePressedEvent(MouseEvent e) {
         // vs Player buttton
-    	System.out.println("Board state: "+Global.getBoardState()+" | GameState: "+Global.getGameState());
+        System.out.println("Board state: " + Global.getBoardState() + " | GameState: " + Global.getGameState());
 
         if (button_pvp.getBounds().contains(e.getPoint()) && (buttonPressed == null || buttonPressed == button_pvp)) {
             // Global.setGameState(GameState.GAME);
 
             Clip clip = Sound.loadSound("buttonclickon");
             clip.setMicrosecondPosition(0);
-           // clip.start();
+            // clip.start();
 
             buttonPressed = button_pvp;
             if (Global.connectedServer.connect())
@@ -134,7 +137,7 @@ public class MainMenu implements Screen {
             buttonPressed = button_ai;
             Clip clip = Sound.loadSound("buttonclickon");
             clip.setMicrosecondPosition(0);
-           // clip.start();
+            // clip.start();
         }
         // quit button
         else if (button_quit.getBounds().contains(e.getPoint())
@@ -145,7 +148,7 @@ public class MainMenu implements Screen {
         else if (closeButton.getBounds().contains(e.getPoint()) && (buttonPressed.equals(button_pvp))) {
             Clip clip = Sound.loadSound("buttonclickoff");
             clip.setMicrosecondPosition(0);
-           // clip.start();
+            // clip.start();
             if (Global.connectedServer.isConnected()) {
                 Global.connectedServer.removeCommand(Packets.P_QUEUE_PLAYER);
                 Global.connectedServer.addCommand(Packets.P_REMOVE_FROM_QUEUE);
