@@ -1,5 +1,6 @@
 package client;
 
+import client.screens.MainMenu;
 import game.Board;
 
 /**
@@ -23,6 +24,9 @@ public class Global {
         if(state.equals(GameState.GAME)) {
             boardState = BoardState.SETUP;
             Board.initialize();
+        } else if(state.equals(GameState.MENU)) {
+            MainMenu.buttonHovered = null;
+            MainMenu.buttonPressed = null;
         }
         gameState = state;
     }

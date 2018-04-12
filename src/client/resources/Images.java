@@ -29,6 +29,7 @@ public class Images {
         loadImage("wood.png");
         loadImage("stone.png");
         loadImage("closeicon.png");
+        loadImage("logo.png");
     }
 
     public static Image getImage(String name) {

@@ -18,7 +18,7 @@ public class AIPlayer extends GamePlayer {
 
 
     public AIPlayer() {
-        this(1);
+        this(0);
     }
 
     public AIPlayer(int mode) {

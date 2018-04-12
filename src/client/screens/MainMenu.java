@@ -15,13 +15,13 @@ import server.Packets;
 public class MainMenu implements Screen {
 
     public Rectangle closeButton = new Rectangle(625, 375, 25, 25);
-    public MenuButton button_pvp = new MenuButton("vs Player", 400, 300, 200, 50);
-    public MenuButton button_ai = new MenuButton("vs AI", 400, 400, 200, 50);
-    public MenuButton button_quit = new MenuButton("Quit", 400, 500, 200, 50);
-    public MenuButton buttonPressed = null;
-    public MenuButton buttonHovered = null;
-    public Color hoverColor = new Color(0, 190, 0, 80); // Used for hovering
-    public Color darkGreen = new Color(0, 80, 0, 80);
+    public MenuButton button_pvp = new MenuButton("Play vs Player", 350, 300, 300, 50);
+    public MenuButton button_ai = new MenuButton("Play vs AI", 350, 400, 300, 50);
+    public MenuButton button_quit = new MenuButton("Exit Game", 350, 500, 300, 50);
+    public static MenuButton buttonPressed = null;
+    public static MenuButton buttonHovered = null;
+    public Color hoverColor = new Color(19, 78, 17, 80); // Used for hovering
+    public Color darkGreen = new Color(10, 40, 8, 80);
     private String searchStatus = "";
 
     public void processMouseMovedEvent(MouseEvent e) {
@@ -37,19 +37,17 @@ public class MainMenu implements Screen {
         }
     }
 
+
+    Font font = new Font("Sans-Serif", Font.BOLD, 25);
     public void paintScreen(Graphics g, ImageObserver o) {
 
-        button_pvp.setFontMetrics(g.getFontMetrics(new Font("Sans-Serif", Font.PLAIN, 25)));
-        button_ai.setFontMetrics(g.getFontMetrics(new Font("Sans-Serif", Font.PLAIN, 25)));
-        button_quit.setFontMetrics(g.getFontMetrics(new Font("Sans-Serif", Font.PLAIN, 25)));
+        button_pvp.setFontMetrics(g.getFontMetrics(font));
+        button_ai.setFontMetrics(g.getFontMetrics(font));
+        button_quit.setFontMetrics(g.getFontMetrics(font));
 
         Graphics2D g2d = (Graphics2D) g;
         g.drawImage(Images.getImage("background_1"), 0, 0, o);
-        g2d.setColor(Color.BLACK);
-        g2d.setFont(new Font("Sans-Serif", Font.PLAIN, 50));
-        g2d.drawString("Stratego 2442", 325, 150);
-        g2d.setColor(Color.WHITE);
-        g2d.drawString("Stratego 2442", 328, 153);
+        g.drawImage(Images.getImage("logo"), 185, 130, o);
 
         g2d.setColor(darkGreen);
         g2d.fillRect((int) button_pvp.getX(), (int) button_pvp.getY(), (int) button_pvp.getWidth(),
@@ -78,11 +76,16 @@ public class MainMenu implements Screen {
         }
 
         
-        g2d.setColor(Color.WHITE);
-        g2d.setFont(new Font("Sans-Serif", Font.PLAIN, 25));
+        g2d.setColor(Color.BLACK);
+        g2d.setFont(font);
         g2d.drawString(button_pvp.getText(), button_pvp.getStringX(), button_pvp.getStringY());
         g2d.drawString(button_ai.getText(), button_ai.getStringX(), button_ai.getStringY());
         g2d.drawString(button_quit.getText(), button_quit.getStringX(), button_quit.getStringY());
+
+        g2d.setColor(Color.WHITE);
+        g2d.drawString(button_pvp.getText(), button_pvp.getStringX() + 2, button_pvp.getStringY()+ 2);
+        g2d.drawString(button_ai.getText(), button_ai.getStringX()+ 2, button_ai.getStringY()+ 2);
+        g2d.drawString(button_quit.getText(), button_quit.getStringX()+ 2, button_quit.getStringY()+ 2);
 
         // To draw an image, we use ImageObserver like this:
         // g2d.drawImage(Images.loadImage("test.png"), 50, 175, o);
@@ -136,7 +139,6 @@ public class MainMenu implements Screen {
         // quit button
         else if (button_quit.getBounds().contains(e.getPoint())
                 && (buttonPressed == null || buttonPressed.equals(button_quit))) {
-            System.out.println("test");
             System.exit(0);
         }
         // close button on "searching for player" box
