@@ -24,6 +24,8 @@ public class Global {
         if(state.equals(GameState.GAME)) {
             boardState = BoardState.SETUP;
             Board.initialize();
+            Board.capturedPieces.clear();
+            Board.lostPieces.clear();
         } else if(state.equals(GameState.MENU)) {
             MainMenu.buttonHovered = null;
             MainMenu.buttonPressed = null;

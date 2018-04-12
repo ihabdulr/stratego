@@ -121,7 +121,7 @@ public class MainMenu implements Screen {
 
             Clip clip = Sound.loadSound("buttonclickon");
             clip.setMicrosecondPosition(0);
-            clip.start();
+           // clip.start();
 
             buttonPressed = button_pvp;
             if (Global.connectedServer.connect())
@@ -134,7 +134,7 @@ public class MainMenu implements Screen {
             buttonPressed = button_ai;
             Clip clip = Sound.loadSound("buttonclickon");
             clip.setMicrosecondPosition(0);
-            clip.start();
+           // clip.start();
         }
         // quit button
         else if (button_quit.getBounds().contains(e.getPoint())
@@ -145,7 +145,7 @@ public class MainMenu implements Screen {
         else if (closeButton.getBounds().contains(e.getPoint()) && (buttonPressed.equals(button_pvp))) {
             Clip clip = Sound.loadSound("buttonclickoff");
             clip.setMicrosecondPosition(0);
-            clip.start();
+           // clip.start();
             if (Global.connectedServer.isConnected()) {
                 Global.connectedServer.removeCommand(Packets.P_QUEUE_PLAYER);
                 Global.connectedServer.addCommand(Packets.P_REMOVE_FROM_QUEUE);

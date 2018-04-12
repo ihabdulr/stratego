@@ -50,8 +50,8 @@ public class Board implements Screen {
             autoFillButton, clearButton, readyButton.setEnabled(false),
             loadButton.setEnabled(SaveLoad.stateFileExists()), saveButton.setEnabled(false));
 
-    private static Map<Piece.PieceType, Integer> capturedPieces = new HashMap<>();
-    private static Map<Piece.PieceType, Integer> lostPieces = new HashMap<>();
+    public static Map<Piece.PieceType, Integer> capturedPieces = new HashMap<>();
+    public static Map<Piece.PieceType, Integer> lostPieces = new HashMap<>();
 
     private static GamePlayer enemyPlayer;
     private static LocalPlayer localPlayer;
@@ -383,6 +383,8 @@ public class Board implements Screen {
 
         if (Animation.shouldAnimate()) {
             //Piece p = Animation.getAnimationPiece();
+            g.setColor(redTransparent);
+            g.fillRect(Animation.getX() * TILE_SIZE, Animation.getY() * TILE_SIZE, TILE_SIZE, TILE_SIZE);
             g.drawImage(Images.getImage(String.valueOf(Animation.getAnimationIndex())),
                     Animation.getX() * TILE_SIZE, Animation.getY() * TILE_SIZE, o);
         }

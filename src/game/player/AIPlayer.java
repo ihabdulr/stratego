@@ -53,11 +53,7 @@ public class AIPlayer extends GamePlayer {
         Optional<Piece> p = myPieces.stream().filter(i -> i.getPosition().equals(piece.getPosition())).findAny();
         if (p.isPresent()) {
             Board.setPiece(piece.getColumn(), piece.getRow(), new Piece(Piece.PieceType.EMPTY));
-            System.out.println("Size: " + myPieces.size());
             myPieces.remove(p.get());
-            System.out.println("Size: " + myPieces.size());
-
-            System.out.println("f: " + hasAtLeastOneMovablePiece());
             return true;
         } else {
             System.out.println("Error finding piece in AI");
