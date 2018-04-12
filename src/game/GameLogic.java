@@ -48,9 +48,6 @@ public class GameLogic {
                 Board.getCurrentPlayer().removePiece(aPiece);
                 Board.getCurrentOpposingPlayer().removePiece(dPiece);
                 System.out.println("Attacked an opponent with the same number");
-
-                Board.addCapturedPiece(dPiece.getPieceType());
-                Board.addLostPiece(aPiece.getPieceType());
             } else if (aPiece.getPieceType().getCombatValue() > dPiece.getPieceType().getCombatValue()) {
                 System.out.println("Attacked an opponent with a lower number");
                 Board.getCurrentPlayer().removePiece(aPiece);
