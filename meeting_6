@@ -1,0 +1,21 @@
+Meeting date: 21 Mar 18
+Meeting time: 1400-1500
+
+Attendance:
+Alek, Aaron, Jeremiah (all present)
+
+Meeting summary:
+Planninig for Alpha Release 
+
+Accomplished since last meeting:
+Players can be added to a queue, Buttons added to Board 
+
+Accomplish before next meeting:
+Functioning Gamelogic, with movable pieces and start of playing game with Dummy AI 
+by Creating a AI Class that just moves randolmy to test gamelogic. Implmenting a Save/Load
+buttons.
+
+Individual issues:
+Aaron - Game session containing both players, game state, Packet handling  
+Alek - Add Animations for Piece and add other features for Game
+Jeremiah - Finish boardmenu functionality,
