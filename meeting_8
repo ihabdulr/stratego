@@ -1,0 +1,20 @@
+Meeting date: 04 April 18
+Meeting time: 1400-1500
+
+Attendance:
+Alek, Aaron, Jeremiah (all present)
+
+Meeting summary:
+Improving GUI and Game fuctionality 
+
+Accomplished since last meeting:
+Added SoundLouder, improved Game Logic
+
+Accomplish before next meeting:
+Contiue to Improve the Multiplayer feature, A logical Ai that doesnt make random moves
+
+
+Individual issues:
+Aaron - Game session containing both players, game state, and list of pieces for each player
+Alek - Continue client GUI, Improve GameLogic 
+Jeremiah - Start on AI making a logical AI
