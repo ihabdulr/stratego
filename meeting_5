@@ -1,0 +1,19 @@
+Meeting date: 14 Mar 18
+Meeting time: 1400-1500
+
+Attendance:
+Alek, Aaron, Jeremiah (all present)
+
+Meeting summary:
+Discussed UI setup and creating the multiplayer game session
+
+Accomplished since last meeting:
+Added basic Main menu and impletend pieces and tiles selection 
+
+Accomplish before next meeting:
+MoveFoward with MultiPlayer by adding players to queue. Making all Board Buttons functional.
+
+Individual issues:
+Aaron - Game session containing both players, game state, and list of pieces for each player
+Alek - Continue client setup, show possible moves when you select a game board piece
+Jeremiah - Finish button menu functionality and main menu 
