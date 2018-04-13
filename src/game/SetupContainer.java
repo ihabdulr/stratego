@@ -36,9 +36,12 @@ public class SetupContainer extends Rectangle {
     private java.util.List<SetupTile> setupTiles = new ArrayList<>();
     public final static Piece.PieceType[] GAME_PIECES = {
             Piece.PieceType.SCOUT, Piece.PieceType.SCOUT, Piece.PieceType.SCOUT, Piece.PieceType.SCOUT, Piece.PieceType.SCOUT, Piece.PieceType.SCOUT,
-            Piece.PieceType.SCOUT, Piece.PieceType.SCOUT, Piece.PieceType.SCOUT, Piece.PieceType.SCOUT, Piece.PieceType.SCOUT, Piece.PieceType.SCOUT,
-            Piece.PieceType.PRIVATE, Piece.PieceType.PRIVATE, Piece.PieceType.PRIVATE, Piece.PieceType.PRIVATE, Piece.PieceType.PRIVATE, Piece.PieceType.PRIVATE,
-            Piece.PieceType.SERGEANT, Piece.PieceType.SERGEANT, Piece.PieceType.SERGEANT, Piece.PieceType.SERGEANT, Piece.PieceType.QUEEN, Piece.PieceType.KING
+            Piece.PieceType.SCOUT,
+            Piece.PieceType.BOMB_DEFUSER, Piece.PieceType.BOMB_DEFUSER, Piece.PieceType.BOMB_DEFUSER,
+            Piece.PieceType.MINION, Piece.PieceType.MINION,Piece.PieceType.MINION, Piece.PieceType.MINION, Piece.PieceType.MINION, Piece.PieceType.MINION,
+            Piece.PieceType.MINOTAUR, Piece.PieceType.MINOTAUR,
+            Piece.PieceType.SKULL_PRINCE, Piece.PieceType.SKULL_KING,
+            Piece.PieceType.BOMB, Piece.PieceType.BOMB, Piece.PieceType.BOMB, Piece.PieceType.FLAG
     };
 
     public static java.util.List<Piece.PieceType> getGamePieces() {

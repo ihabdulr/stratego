@@ -1,6 +1,7 @@
 package client;
 
-import server.Server;
+import client.screens.MainMenu;
+import game.Board;
 
 /**
  * Created by Alek on 3/2/2018.
@@ -20,6 +21,15 @@ public class Global {
         return gameState;
     }
     public static void setGameState(GameState state) {
+        if(state.equals(GameState.GAME)) {
+            boardState = BoardState.SETUP;
+            Board.initialize();
+            Board.capturedPieces.clear();
+            Board.lostPieces.clear();
+        } else if(state.equals(GameState.MENU)) {
+            MainMenu.buttonHovered = null;
+            MainMenu.buttonPressed = null;
+        }
         gameState = state;
     }
     public static BoardState getBoardState() {
@@ -27,6 +37,10 @@ public class Global {
     }
     public static void setBoardState(BoardState state) {
         boardState = state;
+    }
+
+    public static boolean isGameOver() {
+        return boardState.equals(BoardState.GAME_LOSS) || boardState.equals(BoardState.GAME_WON);
     }
     
     public static void setServer(Network serve) {

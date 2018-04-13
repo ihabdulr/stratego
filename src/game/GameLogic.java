@@ -7,7 +7,6 @@ import game.player.GamePlayer;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static game.Board.SIZE_X;
 import static game.Board.SIZE_Y;
@@ -18,55 +17,55 @@ import static game.Board.SIZE_Y;
 public class GameLogic {
 
 
-    public static void attack(Piece aPiece, Piece zPiece) {
+    //Returns true if the flag was captured
+    public static boolean attack(Piece aPiece, Piece zPiece) {
 
-        Piece[][] pieces = Board.getPieces();
-
-        Piece dPiece;
-
-        //side 0 = aPiece = enemy, side 1 = dPiece = enemy
-        int side = aPiece.getPieceType().equals(Piece.PieceType.GENERIC) ? 0 : 1;
-
-        //Assume isPresent for now
-        if (side == 0)
-            dPiece = Board.getEnemyPlayer().getPiece(aPiece.getColumn(), aPiece.getRow()).get();
-        else
-            dPiece = Board.getEnemyPlayer().getPiece(zPiece.getColumn(), zPiece.getRow()).get();
-
+        Piece dPiece = Board.getCurrentOpposingPlayer().getPiece(zPiece);
         Animation.playAnimation(dPiece.getColumn(), dPiece.getRow(), dPiece.getPieceType().getSpriteIndex());
 
-        new ConditionalSleep(2000) {
-            @Override
-            public boolean condition() {
-                return !Animation.canAnimate();
+        if (dPiece.getPieceType().isPieceSpecial()) {
+            switch (dPiece.getPieceType()) {
+                case BOMB:
+                    if (aPiece.getPieceType().equals(Piece.PieceType.BOMB_DEFUSER)) {
+                        Board.setPiece(dPiece.getColumn(), dPiece.getRow(), aPiece.clone());
+                        Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+                        Board.addCapturedPiece(dPiece.getPieceType());
+                    } else {
+                        Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+                        Board.addLostPiece(aPiece.getPieceType());
+                    }
+                    break;
+                case FLAG:
+                    return true;
+
+                default: //This shouldnt happen
+                    System.out.println("Error: Reached end of game logic for special piece");
+                    System.out.println("Piece 1: " + aPiece.getPieceType().name());
+                    System.out.println("Piece 2: " + dPiece.getPieceType().name());
             }
-
-            @Override
-            public void call() {
-                if (aPiece.getPieceType().getCombatValue() == dPiece.getPieceType().getCombatValue()) {
-                    Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
-                    Board.setPiece(dPiece.getColumn(), dPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
-                    Board.addCapturedPiece(dPiece.getPieceType());
-                    Board.addLostPiece(aPiece.getPieceType());
-                } else if (aPiece.getPieceType().getCombatValue() > dPiece.getPieceType().getCombatValue()) {
-                    Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
-                    Board.addLostPiece(aPiece.getPieceType());
-                } else {
-                    Board.setPiece(dPiece.getColumn(), dPiece.getRow(), aPiece.clone());
-                    Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
-                    Board.addCapturedPiece(dPiece.getPieceType());
-                }
-                Board.setPieces(pieces);
+        } else {
+            if (aPiece.getPieceType().getCombatValue() == dPiece.getPieceType().getCombatValue()) {
+                Board.getCurrentPlayer().removePiece(aPiece);
+                Board.getCurrentOpposingPlayer().removePiece(dPiece);
+                System.out.println("Attacked an opponent with the same number");
+            } else if (aPiece.getPieceType().getCombatValue() > dPiece.getPieceType().getCombatValue()) {
+                System.out.println("Attacked an opponent with a lower number");
+                Board.getCurrentPlayer().removePiece(aPiece);
+            } else {
+                System.out.println("Attacked an opponent with a higher number");
+                Board.getCurrentOpposingPlayer().removePiece(dPiece);
+                Board.getCurrentPlayer().movePiece(dPiece, aPiece);
             }
-        }.start();
-
-
+        }
+        return false;
     }
 
     //TODO two different pools of generic
     public static java.util.List<Piece> getMovableTiles(Piece piece) {
         java.util.List<Piece> pieces = new ArrayList<Piece>();
         if (piece != null) {
+            if(piece.getPieceType().getCombatValue() == -1)
+                return pieces;
             int mx = piece.getColumn();
             int my = piece.getRow();
             for (Board.Direction dir : Board.Direction.values()) {
@@ -75,21 +74,14 @@ public class GameLogic {
                     int dy = dir.equals(Board.Direction.UP) || dir.equals(Board.Direction.DOWN) ? my + (dir.getOffset() * (i + 1)) : my;
                     if (dx >= 0 && dy >= 0 && dx < SIZE_X && dy < SIZE_Y) {
 
-                        Piece p;
-                        if (Global.getBoardState().equals(Global.BoardState.MY_TURN))
-                            p = GameLogic.getPiece(new Point(dx, dy), Board.getLocalPlayer(), Board.getEnemyPlayer());
-                        else
-                            p = GameLogic.getPiece(new Point(dx, dy), Board.getEnemyPlayer(), Board.getLocalPlayer());
+                        Piece p = Board.getPiece(dx, dy);
 
-                        if (p.getPieceType().equals(Piece.PieceType.EMPTY) || p.getPieceType().equals(Piece.PieceType.GENERIC)) {
-                            pieces.add(p);
+                         if (p.getPieceType().equals(Piece.PieceType.EMPTY) || Board.getCurrentOpposingPlayer().hasPiece(p))
+                                pieces.add(p);
 
-
-                        }
-                        if (!p.getPieceType().equals(Piece.PieceType.EMPTY)) {
-                           // System.out.println(p.getPieceType().name());
+                        if (!p.getPieceType().equals(Piece.PieceType.EMPTY))
                             break;
-                        }
+
                     }
 
                 }
@@ -97,24 +89,5 @@ public class GameLogic {
         }
         return pieces;
     }
-
-
-    /*
-    In this context, myPlayer is the player whose turn it is - not LocalPlayer
-     */
-    public static Piece getPiece(Point position, GamePlayer myPlayer, GamePlayer enemyPlayer) {
-
-        java.util.List<Piece> pieces = new ArrayList<>();
-        pieces.addAll(myPlayer.getPieces());
-        pieces.addAll(enemyPlayer.getSanitizedPieces());
-
-        Optional<Piece> returnPiece = pieces.stream().filter(p -> p.getPosition().equals(position)).findFirst();
-        if (returnPiece.isPresent()) {
-            return returnPiece.get();
-        }
-        //System.out.println(position.getX() +", " + position.getY());
-        return new Piece(Piece.PieceType.EMPTY).setPosition(position);
-    }
-
 
 }

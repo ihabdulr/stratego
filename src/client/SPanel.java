@@ -84,9 +84,7 @@ public class SPanel extends JPanel implements ActionListener {
                 case GAME:
                     board.processMouseMovedEvent(e);
                     break;
-                default:
-                    board.processMouseMovedEvent(e);
-            }
+             }
             repaint();
         }
 
@@ -98,8 +96,6 @@ public class SPanel extends JPanel implements ActionListener {
                 case GAME:
                     board.processMousePressedEvent(e);
                     break;
-                default:
-                    board.processMousePressedEvent(e);
             }
             	repaint();
         }

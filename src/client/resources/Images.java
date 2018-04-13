@@ -18,13 +18,18 @@ public class Images {
         loadImage("background_0.jpg");
         loadImage("background_1.jpg");
         loadImage("1.png");
+        loadImage("2.png");
+        loadImage("3.png");
+        loadImage("4.png");
+        loadImage("5.png");
         loadImage("6.png");
-        loadImage("7.png");
-        loadImage("8.png");
-        loadImage("9.png");
+        loadImage("10.png");
+        loadImage("11.png");
+        loadImage("12.png");
         loadImage("wood.png");
         loadImage("stone.png");
         loadImage("closeicon.png");
+        loadImage("logo.png");
     }
 
     public static Image getImage(String name) {

@@ -7,6 +7,7 @@ import game.player.AIPlayer;
 import game.player.GamePlayer;
 import game.player.LocalPlayer;
 import game.player.NetworkPlayer;
+import server.Packets;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -35,18 +36,22 @@ public class Board implements Screen {
     private Color yellowTransparent = new Color(155, 155, 0, 128);
     private Color yellowTransparent2 = new Color(155, 155, 0, 64);
 
-    private BoardButton autoFillButton = new BoardButton((Global.WIDTH / 2) + 32, 40, (Global.WIDTH / 2) - 64, 48, "Auto-Fill");
-    private BoardButton clearButton = new BoardButton((Global.WIDTH / 2) + 32, 136, (Global.WIDTH / 2) - 64, 48, "Clear Board");
-    private BoardButton loadButton = new BoardButton((Global.WIDTH / 2) + 32, 232, (Global.WIDTH / 2) - 64, 48, "Load Setup");
-    private BoardButton saveButton = new BoardButton((Global.WIDTH / 2) + 32, 328, (Global.WIDTH / 2) - 64, 48, "Save Setup");
-    private BoardButton readyButton = new BoardButton((Global.WIDTH / 2) + 32, 424, (Global.WIDTH / 2) - 64, 48, "Ready");
+    private static BoardButton autoFillButton = new BoardButton((Global.WIDTH / 2) + 32, 40, (Global.WIDTH / 2) - 64, 48, "Auto-Fill");
+    private static BoardButton clearButton = new BoardButton((Global.WIDTH / 2) + 32, 136, (Global.WIDTH / 2) - 64, 48, "Clear Board");
+    private static BoardButton loadButton = new BoardButton((Global.WIDTH / 2) + 32, 232, (Global.WIDTH / 2) - 64, 48, "Load Setup");
+    private static BoardButton saveButton = new BoardButton((Global.WIDTH / 2) + 32, 328, (Global.WIDTH / 2) - 64, 48, "Save Setup");
+    private static BoardButton readyButton = new BoardButton((Global.WIDTH / 2) + 32, 424, (Global.WIDTH / 2) - 64, 48, "Ready");
+    private BoardButton exitMainButton = new BoardButton(64, 640, (Global.WIDTH / 2) - 128, 48, "Exit to Main Menu");
+    private static BoardButton mainMenuButton = new BoardButton((Global.WIDTH / 4) + 32, Global.HEIGHT / 2,
+            (Global.WIDTH / 2) - 64, 64, "Main Menu");
+
 
     private java.util.List<BoardButton> setupButtons = Arrays.asList(
             autoFillButton, clearButton, readyButton.setEnabled(false),
             loadButton.setEnabled(SaveLoad.stateFileExists()), saveButton.setEnabled(false));
 
-    private static Map<Piece.PieceType, Integer> capturedPieces = new HashMap<>();
-    private static Map<Piece.PieceType, Integer> lostPieces = new HashMap<>();
+    public static Map<Piece.PieceType, Integer> capturedPieces = new HashMap<>();
+    public static Map<Piece.PieceType, Integer> lostPieces = new HashMap<>();
 
     private static GamePlayer enemyPlayer;
     private static LocalPlayer localPlayer;
@@ -64,6 +69,10 @@ public class Board implements Screen {
         return Global.getBoardState().equals(Global.BoardState.MY_TURN) ? localPlayer : enemyPlayer;
     }
 
+    public static GamePlayer getCurrentOpposingPlayer() {
+        return Global.getBoardState().equals(Global.BoardState.MY_TURN) ? enemyPlayer : localPlayer;
+    }
+
     public static void setPieces(Piece[][] newPieces) {
         pieces = newPieces;
     }
@@ -78,22 +87,7 @@ public class Board implements Screen {
         });
     }
 
-    public static java.util.List<Piece> getBoardPieceObjects(java.util.List<Piece> alias) {
-        java.util.List<Piece> returnPieces = new ArrayList<Piece>();
-        for (Piece p : alias) {
-            Optional<Piece> piece = Stream.of(pieces).flatMap(Stream::of).filter(i -> i.getPieceType().equals(p.getPieceType()) &&
-                    i.getPosition().equals(p.getPosition())).findFirst();
-            if (piece.isPresent()) {
-                returnPieces.add(piece.get());
-            } else {
-                System.out.println("FAILED TO CONVERT!");
-            }
-        }
-        return returnPieces;
-    }
-
-
-    private SetupContainer setupContainer = new SetupContainer(15, 64 * SIZE_Y + 48, Global.WIDTH - 31, 160);
+    private static SetupContainer setupContainer = new SetupContainer(15, 64 * SIZE_Y + 48, Global.WIDTH - 31, 160);
 
     static Piece[][] pieces = new Piece[SIZE_X][SIZE_Y];
 
@@ -115,6 +109,19 @@ public class Board implements Screen {
         for (int x = 0; x < SIZE_X; ++x)
             for (int y = 0; y < SIZE_Y; ++y)
                 pieces[x][y] = new Piece(Piece.PieceType.EMPTY).setPosition(x, y);
+        //Rocks
+        pieces[3][3] = new Piece(Piece.PieceType.BLOCK).setPosition(3, 3);
+        pieces[3][4] = new Piece(Piece.PieceType.BLOCK).setPosition(3, 4);
+        pieces[4][3] = new Piece(Piece.PieceType.BLOCK).setPosition(4, 3);
+        pieces[4][4] = new Piece(Piece.PieceType.BLOCK).setPosition(4, 4);
+        setupContainer.initialize();
+        autoFillButton.setEnabled(true);
+        readyButton.setEnabled(false);
+        saveButton.setEnabled(false);
+        loadButton.setEnabled(true);
+        selectedPiece = null;
+        selectedTile = null;
+        selectedButton = null;
     }
 
     private void autoFillBoard() {
@@ -132,14 +139,9 @@ public class Board implements Screen {
         readyButton.setEnabled(true);
     }
 
-
-    //Returns a piece in the context of Local Playerflatmap
     public static Piece getPiece(int col, int row) {
-        //  if (Global.getBoardState().equals(Global.BoardState.SETUP))
         return pieces[col][row];
-        //   return GameLogic.getPiece(new Point(col, row), Board.getLocalPlayer(), Board.getEnemyPlayer());
     }
-
 
     public static void setPiece(int col, int row, Piece piece) {
         pieces[col][row] = piece.setPosition(col, row);
@@ -151,7 +153,6 @@ public class Board implements Screen {
             Board.getEnemyPlayer().movePiece(piece, dest.getPosition());
         pieces[dest.getColumn()][dest.getRow()] = pieces[piece.getColumn()][piece.getRow()].clone().setPosition(dest.getPosition());
         pieces[piece.getColumn()][piece.getRow()] = dest.clone().setPosition(piece.getPosition());
-
     }
 
     public static void addCapturedPiece(Piece.PieceType pieceType) {
@@ -172,111 +173,126 @@ public class Board implements Screen {
         }
     }
 
-    public static boolean move(Piece start, Piece end) {
+    public enum TurnState {VALID, INVALID, NO_MORE, FLAG_CAPTURED}
 
-        //DO NOT FOR THE LOVE OF GOD USE .contains, IT WILL RETURN FALSE
-        //BECAUSE .contains CHECKS FOR THE OBJECT ADDRESS
-        //Alternatively use the getBoardPieceObjects() method
-        if (GameLogic.getMovableTiles(start).stream().noneMatch(p ->
-                p.getPosition().equals(end.getPosition()) && p.getPieceType().equals(end.getPieceType())))
-            return false;
+    public static TurnState move(Piece start, Piece end2) {
+
+        Piece end = getPiece(end2.getColumn(), end2.getRow());
 
         //simple swap
         if (end.getPieceType().equals(Piece.PieceType.EMPTY)) {
             movePiece(start, end);
             selectedPiece = null;
-            return true;
+            return getCurrentPlayer().hasAtLeastOneMovablePiece() ? TurnState.VALID : TurnState.NO_MORE;
         }
 
-        if (end.getPieceType().equals(Piece.PieceType.GENERIC)) {
-            GameLogic.attack(start, end.clone(enemyPlayer.getPiece(end.getPosition()).get().getPieceType()));
+        if (getCurrentOpposingPlayer().getPieces().contains(end)) {
+            boolean flag = GameLogic.attack(start, end);
             selectedPiece = null;
-            return true;
+            if (flag)
+                return TurnState.FLAG_CAPTURED;
+            return getCurrentPlayer().hasAtLeastOneMovablePiece() ? TurnState.VALID : TurnState.NO_MORE;
         }
 
-        return false;
+        return TurnState.INVALID;
     }
 
 
     public void processMousePressedEvent(MouseEvent e) {
-        Stream.of(pieces).flatMap(Stream::of).forEach(i -> {
-            if (i.getBounds().contains(e.getPoint())) {
-                if (Global.getBoardState().equals(Global.BoardState.MY_TURN)) {
-                    if (i.getPieceType().isSelectable()) {
-                        if (selectedPiece == null) {
-                            selectedPiece = i;
-                        } else if (selectedPiece.equals(i)) {
-                            selectedPiece = null;
+        if (!Global.isGameOver()) {
+            Stream.of(pieces).flatMap(Stream::of).forEach(i -> {
+                if (i.getBounds().contains(e.getPoint())) {
+                    if (Global.getBoardState().equals(Global.BoardState.MY_TURN)) {
+                        if (i.getPieceType().isSelectable()) {
+                            if (selectedPiece == null) {
+                                selectedPiece = i;
+                            } else if (selectedPiece.equals(i)) {
+                                selectedPiece = null;
+                            }
+                        } else if (selectedPiece != null) {
+                            e.consume();
+                            TurnState result = move(selectedPiece, i);
+                            if (result.equals(TurnState.VALID)) {
+                                Global.setBoardState(Global.BoardState.THEIR_TURN);
+                                ((AIPlayer) enemyPlayer).nextMove();
+                            } else if (result.equals(TurnState.NO_MORE)) {
+                                Global.setBoardState(Global.BoardState.GAME_LOSS);
+                            } else if (result.equals(TurnState.FLAG_CAPTURED)) {
+                                if (Global.getBoardState().equals(Global.BoardState.MY_TURN))
+                                    Global.setBoardState(Global.BoardState.GAME_WON);
+                                else
+                                    Global.setBoardState(Global.BoardState.GAME_LOSS);
+                            }
                         }
-                    } else if (selectedPiece != null) {
-                        e.consume();
-                        if (move(selectedPiece, i)) {
-                            Global.setBoardState(Global.BoardState.THEIR_TURN);
-                            ((AIPlayer) enemyPlayer).nextMove();
-                        }
-                    }
-                } else if (Global.getBoardState().equals(Global.BoardState.SETUP)) {
-                    if (selectedTile != null) {
-                        if (i.getPieceType().equals(Piece.PieceType.EMPTY)) {
-                            pieces[i.getColumn()][i.getRow()] = new Piece(selectedTile.getType()).setPosition(i.getColumn(), i.getRow());
-                            setupContainer.removeTile(selectedTile);
-                            selectedTile = null;
-                            if (setupContainer.getSetupTiles().isEmpty()) {
-                                readyButton.setEnabled(true);
-                                saveButton.setEnabled(true);
+                    } else if (Global.getBoardState().equals(Global.BoardState.SETUP)) {
+                        if (selectedTile != null) {
+                            if (i.getPieceType().equals(Piece.PieceType.EMPTY)) {
+                                pieces[i.getColumn()][i.getRow()] = new Piece(selectedTile.getType()).setPosition(i.getColumn(), i.getRow());
+                                setupContainer.removeTile(selectedTile);
+                                selectedTile = null;
+                                if (setupContainer.getSetupTiles().isEmpty()) {
+                                    readyButton.setEnabled(true);
+                                    saveButton.setEnabled(true);
+                                }
                             }
                         }
                     }
                 }
-            }
-        });
+            });
 
-        if (Global.getBoardState().equals(Global.BoardState.SETUP)) {
-            for (SetupContainer.SetupTile tile : setupContainer.getSetupTiles()) {
-                if (tile.getBounds().contains(e.getPoint())) {
-                    if (selectedTile == null) {
-                        selectedTile = tile;
-                    } else if (selectedTile.equals(tile)) {
-                        selectedTile = null;
+            if (Global.getBoardState().equals(Global.BoardState.SETUP)) {
+                for (SetupContainer.SetupTile tile : setupContainer.getSetupTiles()) {
+                    if (tile.getBounds().contains(e.getPoint())) {
+                        if (selectedTile == null) {
+                            selectedTile = tile;
+                        } else if (selectedTile.equals(tile)) {
+                            selectedTile = null;
+                        }
+                    }
+                }
+                for (BoardButton button : setupButtons) {
+                    if (button.getBounds().contains(e.getPoint()) && button.isEnabled()) {
+                        if (button.equals(readyButton)) {
+                            if (!Global.isNetworkGame()) {
+                                enemyPlayer = new AIPlayer();
+                                addPieces(enemyPlayer.getSanitizedPieces());
+                                //Global.setBoardState(Global.BoardState.GAME_WON); //used for testing
+                                Global.setBoardState(Global.BoardState.MY_TURN);
+                            } else {
+                                //TODO tell the server we're ready to go
+                                enemyPlayer = new NetworkPlayer();
+                                Global.connectedServer.addCommand(Packets.P_SEND_PIECES + SaveLoad.getPiecesAsString());
+                            }
+
+                        } else if (button.equals(clearButton)) {
+                            initialize();
+                        } else if (button.equals(autoFillButton)) {
+                            autoFillBoard();
+                            autoFillButton.setEnabled(false);
+                            readyButton.setEnabled(true);
+                            saveButton.setEnabled(true);
+                        } else if (button.equals(saveButton)) {
+                            SaveLoad.saveSetup();
+                            loadButton.setEnabled(false);
+                        } else if (button.equals(loadButton)) {
+                            SaveLoad.loadSetup();
+                            loadButton.setEnabled(false);
+                            readyButton.setEnabled(true);
+                            setupContainer.clear();
+                        }
                     }
                 }
             }
-            for (BoardButton button : setupButtons) {
-                if (button.getBounds().contains(e.getPoint()) && button.isEnabled()) {
-                    if (button.equals(readyButton)) {
-                        if (!Global.isNetworkGame()) {
-                            enemyPlayer = new AIPlayer();
-                            addPieces(enemyPlayer.getSanitizedPieces());
-                        } else {
-                            //TODO tell the server we're ready to go
-                            enemyPlayer = new NetworkPlayer();
-                        }
-                        Global.setBoardState(Global.BoardState.MY_TURN);
-                    } else if (button.equals(clearButton)) {
-                        initialize();
-                        setupContainer.initialize();
-                        autoFillButton.setEnabled(true);
-                        readyButton.setEnabled(false);
-                        saveButton.setEnabled(false);
-                        loadButton.setEnabled(true);
-                    } else if (button.equals(autoFillButton)) {
-                        autoFillBoard();
-                        autoFillButton.setEnabled(false);
-                        readyButton.setEnabled(true);
-                        saveButton.setEnabled(true);
-                    } else if (button.equals(saveButton)) {
-                        SaveLoad.saveSetup();
-                        loadButton.setEnabled(false);
-                    } else if (button.equals(loadButton)) {
-                        SaveLoad.loadSetup();
-                        loadButton.setEnabled(false);
-                        readyButton.setEnabled(true);
-                        setupContainer.clear();
-                    }
-                }
+            else if (exitMainButton.getBounds().contains(e.getPoint()) && mainMenuButton.isEnabled()) {
+                Global.setGameState(Global.GameState.MENU);
+                Global.setBoardState(Global.BoardState.SETUP);
+            }
+        } else { //game is over
+            if (mainMenuButton.getBounds().contains(e.getPoint()) && mainMenuButton.isEnabled()) {
+                Global.setGameState(Global.GameState.MENU);
+                Global.setBoardState(Global.BoardState.SETUP);
             }
         }
-
     }
 
     public void processMouseMovedEvent(MouseEvent e) {
@@ -288,13 +304,41 @@ public class Board implements Screen {
                     button.setHighlighted(false);
                 }
             }
+        } else if (Global.isGameOver()) {
+            if (mainMenuButton.getBounds().contains(e.getPoint())) {
+                mainMenuButton.setHighlighted(true);
+            } else {
+                mainMenuButton.setHighlighted(false);
+            }
+        } else if (exitMainButton.getBounds().contains(e.getPoint())) {
+            exitMainButton.setHighlighted(true);
+        } else {
+            exitMainButton.setHighlighted(false);
         }
+    }
+
+    public void formatButton(Graphics g, BoardButton button) {
+        if (button.isHighlighted())
+            g.setColor(whiteTransparent);
+        else
+            g.setColor(blackTransparent);
+        g.fillRect(button.x, button.y, button.width, button.height);
+        button.setFontMetrics(g.getFontMetrics(titleFont));
+        if (button.isEnabled())
+            g.setColor(Color.YELLOW);
+        else
+            g.setColor(Color.RED);
+        g.drawString(button.getString(), button.getStringX(), button.getStringY());
+    }
+
+    private String formatEnum(String name) {
+        return name.charAt(0) + name.toLowerCase().replace("_", " ").substring(1);
     }
 
     public void paintScreen(Graphics g, ImageObserver o) {
         Graphics2D g2d = (Graphics2D) g;
         g.drawImage(Images.getImage("background_0"), 0, 0, o);
-        java.util.List<Piece> pieces = Board.getBoardPieceObjects(GameLogic.getMovableTiles(selectedPiece));
+        java.util.List<Piece> pieces = GameLogic.getMovableTiles(selectedPiece);
         g2d.setColor(Color.WHITE);
         for (int x = 0; x < Board.SIZE_X; ++x) {
             for (int y = 0; y < Board.SIZE_Y; ++y) {
@@ -304,14 +348,15 @@ public class Board implements Screen {
                 if (piece.getPieceType() != Piece.PieceType.EMPTY) {
                     if (piece.getPieceType().equals(Piece.PieceType.GENERIC)) {
                         g.drawImage(Images.getImage("stone"), xOffset, yOffset, o);
-                    } else {
+                    } else if (piece.getPieceType().getCombatValue() > -1) {
                         g.drawImage(Images.getImage("wood"), xOffset, yOffset, o);
-                        g.drawImage(Images.getImage(String.valueOf(piece.getPieceType().getSpriteIndex())), xOffset, yOffset, o);
                         g.setColor(Color.BLACK);
                         g.drawString(String.valueOf(piece.getPieceType().getCombatValue()), xOffset + (TILE_SIZE - 10), yOffset + (TILE_SIZE - 10));
                         g.setColor(Color.WHITE);
                         g.drawString(String.valueOf(piece.getPieceType().getCombatValue()), xOffset + (TILE_SIZE - 9), yOffset + (TILE_SIZE - 9));
                     }
+                    if (piece.getPieceType().getSpriteIndex() > -1)
+                        g.drawImage(Images.getImage(String.valueOf(piece.getPieceType().getSpriteIndex())), xOffset, yOffset, o);
                 } else if (Global.getBoardState().equals(Global.BoardState.SETUP)) {
                     if (y > 4) {
                         g.setColor(yellowTransparent2);
@@ -341,6 +386,8 @@ public class Board implements Screen {
 
         if (Animation.shouldAnimate()) {
             //Piece p = Animation.getAnimationPiece();
+            g.setColor(redTransparent);
+            g.fillRect(Animation.getX() * TILE_SIZE, Animation.getY() * TILE_SIZE, TILE_SIZE, TILE_SIZE);
             g.drawImage(Images.getImage(String.valueOf(Animation.getAnimationIndex())),
                     Animation.getX() * TILE_SIZE, Animation.getY() * TILE_SIZE, o);
         }
@@ -364,17 +411,7 @@ public class Board implements Screen {
                         tile.x + setupContainer.getTileXOffset(), tile.y + setupContainer.getTileYOffset(), o);
             }
             for (BoardButton button : setupButtons) {
-                if (button.isHighlighted())
-                    g.setColor(whiteTransparent);
-                else
-                    g.setColor(blackTransparent);
-                g.fillRect(button.x, button.y, button.width, button.height);
-                button.setFontMetrics(g.getFontMetrics(titleFont));
-                if (button.isEnabled())
-                    g.setColor(Color.YELLOW);
-                else
-                    g.setColor(Color.RED);
-                g.drawString(button.getString(), button.getStringX(), button.getStringY());
+                formatButton(g, button);
             }
         } else {
             g.setColor(Color.WHITE);
@@ -397,6 +434,25 @@ public class Board implements Screen {
                         Global.WIDTH - (Global.WIDTH / 4) + 45, 60 + (i * TILE_SIZE + 16), o);
                 g.drawString("x" + p.getValue(), Global.WIDTH - (Global.WIDTH / 4) + 45 + TILE_SIZE, 60 + (i * TILE_SIZE + 16) + 32);
                 ++i;
+            }
+
+            if (selectedPiece != null) {
+                g.setColor(Color.YELLOW);
+                g.setFont(titleFont);
+                g.drawString("Selected Piece: " + formatEnum(selectedPiece.getPieceType().name()), 15, 550);
+            }
+            g.drawString("Turn: " + (Global.getBoardState().equals(Global.BoardState.MY_TURN) ? "My Turn" : "Enemy turn"), 15, 575);
+
+            if (Global.isGameOver()) {
+                g.setColor(blackTransparent);
+                g.fillRect(0, 0, Global.WIDTH, Global.HEIGHT);
+                g.fillRect(Global.WIDTH / 4, Global.HEIGHT / 4, Global.WIDTH / 2, Global.HEIGHT / 2);
+                g.setColor(Color.YELLOW);
+                g.drawString(Global.getBoardState().name().replace("_", " ") + "!",
+                        465, 250);
+                formatButton(g, mainMenuButton);
+            } else {
+                formatButton(g, exitMainButton);
             }
 
         }
