@@ -99,7 +99,7 @@ public class Board implements Screen {
             this.offset = offset;
         }
 
-        int getOffset() {
+        public int getOffset() {
             return offset;
         }
     }
@@ -182,6 +182,8 @@ public class Board implements Screen {
         //simple swap
         if (end.getPieceType().equals(Piece.PieceType.EMPTY)) {
             movePiece(start, end);
+            if(!Global.isNetworkGame()&&Board.getCurrentOpposingPlayer().equals(Board.getEnemyPlayer()))
+        			AIPlayer.updatetracker(start, end, AIPlayer.moveUpdate.MOVE);
             selectedPiece = null;
             return getCurrentPlayer().hasAtLeastOneMovablePiece() ? TurnState.VALID : TurnState.NO_MORE;
         }

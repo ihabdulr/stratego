@@ -2,6 +2,7 @@ package game;
 
 
 import client.Global;
+import game.player.AIPlayer;
 import game.player.GamePlayer;
 
 import java.awt.*;
@@ -30,9 +31,17 @@ public class GameLogic {
                         Board.setPiece(dPiece.getColumn(), dPiece.getRow(), aPiece.clone());
                         Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
                         Board.addCapturedPiece(dPiece.getPieceType());
+                        if(!Global.isNetworkGame()&&Board.getCurrentOpposingPlayer().equals(Board.getEnemyPlayer()))
+                				AIPlayer.updatetracker(aPiece,dPiece,AIPlayer.moveUpdate.ATTACKWIN);
+                        else if(!Global.isNetworkGame()&&Board.getCurrentPlayer().equals(Board.getEnemyPlayer()))
+                    			AIPlayer.updatetracker(dPiece,dPiece,AIPlayer.moveUpdate.ATTACKLOSS);
                     } else {
                         Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
                         Board.addLostPiece(aPiece.getPieceType());
+                        if(!Global.isNetworkGame()&&Board.getCurrentOpposingPlayer().equals(Board.getEnemyPlayer()))
+            					AIPlayer.updatetracker(aPiece,aPiece,AIPlayer.moveUpdate.ATTACKLOSS);
+                        else if(!Global.isNetworkGame()&&Board.getCurrentPlayer().equals(Board.getEnemyPlayer()))
+                				AIPlayer.updatetracker(dPiece,dPiece,AIPlayer.moveUpdate.ATTACKWIN);
                     }
                     break;
                 case FLAG:
@@ -48,13 +57,30 @@ public class GameLogic {
                 Board.getCurrentPlayer().removePiece(aPiece);
                 Board.getCurrentOpposingPlayer().removePiece(dPiece);
                 System.out.println("Attacked an opponent with the same number");
+                if(!Global.isNetworkGame()&&Board.getCurrentOpposingPlayer().equals(Board.getEnemyPlayer()))
+                		AIPlayer.updatetracker(aPiece,aPiece,AIPlayer.moveUpdate.TIE);
+                else if(!Global.isNetworkGame()&&Board.getCurrentPlayer().equals(Board.getEnemyPlayer()))
+        				AIPlayer.updatetracker(dPiece,dPiece,AIPlayer.moveUpdate.TIE);
             } else if (aPiece.getPieceType().getCombatValue() > dPiece.getPieceType().getCombatValue()) {
                 System.out.println("Attacked an opponent with a lower number");
                 Board.getCurrentPlayer().removePiece(aPiece);
+                if(!Global.isNetworkGame()&&Board.getCurrentOpposingPlayer().equals(Board.getEnemyPlayer())) {
+            			AIPlayer.updatetracker(aPiece,aPiece,AIPlayer.moveUpdate.ATTACKLOSS);
+                }
+                else if(!Global.isNetworkGame()&&Board.getCurrentPlayer().equals(Board.getEnemyPlayer()))
+        				AIPlayer.updatetracker(dPiece,dPiece,AIPlayer.moveUpdate.ATTACKWIN);
+
+
             } else {
                 System.out.println("Attacked an opponent with a higher number");
                 Board.getCurrentOpposingPlayer().removePiece(dPiece);
-                Board.getCurrentPlayer().movePiece(dPiece, aPiece);
+                Board.getCurrentPlayer().movePiece(aPiece, dPiece);
+                
+                
+                if(!Global.isNetworkGame()&&Board.getCurrentOpposingPlayer().equals(Board.getEnemyPlayer())) 
+                		AIPlayer.updatetracker(aPiece,dPiece,AIPlayer.moveUpdate.ATTACKWIN);
+                else if(!Global.isNetworkGame()&&Board.getCurrentPlayer().equals(Board.getEnemyPlayer()))
+    					AIPlayer.updatetracker(dPiece,dPiece,AIPlayer.moveUpdate.ATTACKLOSS);
             }
         }
         return false;
