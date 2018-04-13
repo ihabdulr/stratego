@@ -51,19 +51,6 @@ public class AIPlayer extends GamePlayer {
 	 
 	}
 
-class bestmove {
-	public Piece beststart;
-	public int score;
-	public Piece bestend;
-	public  bestmove(Piece p,Piece e, int i) {
-		beststart=p;
-		bestend=e;
-		score=i;
-	
-			}
-
-
-}
 
 	private static java.util.List<pieceTracker> guessedPieces = new ArrayList<pieceTracker>();
 	private static int agresivep=0;
@@ -507,8 +494,8 @@ class bestmove {
 					return o1.timesMoved > o2.timesMoved ? -1 : 1;
 				}
 			});
-	
-						
+			
+							
     	
     }
 
@@ -550,22 +537,34 @@ class bestmove {
         return false;
     }
 
+    
+
 
     public boolean nextMove() {
     		intilizemap();
     		turnnum++;
     		java.util.List<Piece> tempenemy= guessesBoard();
     		java.util.List<Piece> tempai = new ArrayList<Piece>();
+    		boolean availablePlays=false;;
     		//System.out.println(myPieces.size());
     		for(Piece p: myPieces) {
     			tempai.add(p.clone());
     		}
     		
+    		for (Piece piece : myPieces) {
+                java.util.List<Piece> available = GameLogic.getMovableTiles(piece);
+                if (!available.isEmpty()) {
+                	 	availablePlays=true;
+                	 	break;
+                	
+                }
+                }
+    		if(availablePlays==true) {
     		//bestmove bm= miniMax(tempai, tempenemy, 1, null, null, Turn.AI, -1000);
-    		bestmovemade bmade= getBestmove(tempai,tempenemy,1);
-    		Board.TurnState state = Board.move(bmade.beststart, bmade.bestend);
-    		System.out.println("Enemy moving: " + bmade.beststart.getPieceType() + " to " + bmade.bestend.getPieceType()+" "+bmade.bestend.getPosition()+bmade.beststart.getPosition());
-            if(state.equals(Board.TurnState.VALID)) { 
+    			bestmovemade bmade= getBestmove(tempai,tempenemy,1);
+    			Board.TurnState state = Board.move(bmade.beststart, bmade.bestend);
+    			System.out.println("Enemy moving: " + bmade.beststart.getPieceType() + " to " + bmade.bestend.getPieceType()+" "+bmade.bestend.getPosition()+bmade.beststart.getPosition());
+    			if(state.equals(Board.TurnState.VALID)) { 
                 Global.setBoardState(Global.BoardState.MY_TURN);
                 return true;
             }
@@ -587,6 +586,7 @@ class bestmove {
             }
         }
         */
+    		}
         Global.setBoardState(Global.BoardState.GAME_WON);
         return false;
     }
