@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class SaveLoad {
 
@@ -22,6 +23,10 @@ public class SaveLoad {
         return playerSetup;
     }
 
+    public static String getPieceAsString(Piece p) {
+    	return p.getPieceType().name() + ":" + p.getColumn() + ":" + p.getRow();
+    }
+    
     public static void saveSetup() {
         String playerSetup = getPiecesAsString();
 
@@ -39,6 +44,21 @@ public class SaveLoad {
     }
 
 
+    public static Piece convertPiece(String pieceString) {
+    	String[] props = pieceString.split(":");
+        int col = Integer.parseInt(props[1]);
+        int row = Integer.parseInt(props[2]);
+        String pieceName = props[0];
+        Piece.PieceType pieceType = null;
+        for (Piece.PieceType type : Piece.PieceType.values()) {
+            if (pieceName.equals(type.name())) {
+                pieceType = type;
+                break;
+            }
+        }
+        Piece boardPiece = new Piece(pieceType).setPosition(col, row);
+        return boardPiece;
+    }
     public static java.util.List<Piece> convertPieces(String piecesString) {
         java.util.List<Piece> pieceList = new ArrayList<>();
         String[] pieces = piecesString.split(",");

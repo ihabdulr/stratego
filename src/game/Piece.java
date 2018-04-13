@@ -11,17 +11,23 @@ public class Piece {
     //Generic is used for an enemy piece that we cant see
     //Block is used for part of the map that we cant move to
     public enum PieceType {
-        KING(1, 1, true), QUEEN(2, 6, true), SERGEANT(7, 7, true), PRIVATE(8, 8, true),
-        SCOUT(9, 9, true), EMPTY(-1, 99, false), GENERIC(-1, 99, false), BLOCK(1, 99, false),
-        BOMB(-1, 99, false);
+        SKULL_KING(1, 1, true, false), SKULL_PRINCE(2, 2, true, false), MINOTAUR(3, 3, true, false), MINION(4, 4, true, false),
+        BOMB_DEFUSER(5, 5, true, false), SCOUT(6, 6, true, false), EMPTY(-1, -1, false, false),
+        GENERIC(-1, -1, false, false), BLOCK(-1, 12, false, false),
+        BOMB(-1, 10, false, true), FLAG(-1, 11, false, true);
 
         int combatValue, spriteIndex;
-        boolean selectable;
+        boolean selectable, special;
 
-        PieceType(int combatValue, int spriteIndex, boolean selectable) {
+        PieceType(int combatValue, int spriteIndex, boolean selectable, boolean special) {
             this.combatValue = combatValue;
             this.spriteIndex = spriteIndex;
             this.selectable = selectable;
+            this.special = special;
+        }
+
+        public boolean isPieceSpecial() {
+            return special;
         }
 
         public int getCombatValue() {
@@ -36,6 +42,14 @@ public class Piece {
             return selectable;
         }
 
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Piece) {
+            return ((Piece) obj).col == col && ((Piece) obj).row == row;
+        }
+        return false;
     }
 
     private PieceType pieceType = PieceType.EMPTY;
@@ -90,8 +104,9 @@ public class Piece {
         return pieceType.equals(PieceType.SCOUT) ? 10 : 1;
     }
 
-   public void setPieceType(PieceType type) {
+   public Piece setPieceType(PieceType type) {
         this.pieceType = type;
+       return this;
    }
 
 

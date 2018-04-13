@@ -54,17 +54,27 @@ public class MultiplayerQueue {
 		return playerQueue;
 	}
 	
+	public Player getPlayerByAddress(String s) {
+		for (int i = 0; i < playerQueue.size(); i++) {
+			Player a = playerQueue.get(i);
+			if (a.getAddress().equals(s)) 
+				return a;
+		}
+		return null;
+	}
 	
-	public void checkForMatch() {
+	public GameSession checkForMatch() {
 		//System.out.println("Queue count is now: "+playerQueue.size());
 		if (playerQueue.size() > 1) {
 			Player a = playerQueue.get(0);
 			Player b = playerQueue.get(1);
 			removePlayer(a.getAddress());
 			removePlayer(b.getAddress());
-			currentGames.add(new GameSession(a, b, currentGames.size() + 1));
+			GameSession gs = new GameSession(a, b, currentGames.size() + 1);
+			currentGames.add(gs);
 			System.out.println("Players A and B are in a match! ");
+			return gs;
 		}
-		
+		return null;
 	}
 }
