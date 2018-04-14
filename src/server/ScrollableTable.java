@@ -27,13 +27,13 @@ import javax.swing.table.TableModel;
  */
 public class ScrollableTable extends JPanel {
 
-	public HashMap<Integer, SocketHandler> clients ;
+	public HashMap<String, SocketHandler> clients ;
 	public JTable table;
 	public Server mainServer;
 	
 	
 	
-	public ScrollableTable(HashMap<Integer, SocketHandler> hm, Server ms) {
+	public ScrollableTable(HashMap<String, SocketHandler> hm, Server ms) {
 		clients = hm;
 		mainServer = ms;
         setLayout(new BorderLayout());
@@ -59,7 +59,7 @@ public class ScrollableTable extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
             	int v = table.getSelectedRow();
-            	int value = (int) table.getValueAt(v, 0);
+            	String value = (String) table.getValueAt(v, 1);
 
 				ms.decrementClientCount(value);
 				JOptionPane.showMessageDialog(table, "Client kicked off the server ");   	      
@@ -120,7 +120,7 @@ public class ScrollableTable extends JPanel {
 	}
 	
 	/** Update table on change in clients connected **/
-	public void updateClients(HashMap<Integer, SocketHandler> hm) {
+	public void updateClients(HashMap<String, SocketHandler> hm) {
 		clients = hm;
 		TableModel m = toTableModel(clients);
 		table.setModel(m);

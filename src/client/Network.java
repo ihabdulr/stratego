@@ -6,8 +6,14 @@ import java.net.SocketException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import client.Global.GameState;
+import game.Board;
+import game.SaveLoad;
+import game.player.NetworkPlayer;
 import server.Packets;
 
 /**
@@ -25,9 +31,10 @@ public class Network implements Runnable {
     private DataInputStream dIn = null;
     private DataOutputStream dOut = null;
     private Socket clientConnection = null;
+    private String clientAddress;
     private boolean connected = false;
     private String answer = "";
-
+    private boolean started = false;
 
     public Network(int port, String server) {
         PORT = port;
@@ -55,7 +62,8 @@ public class Network implements Runnable {
         try {
             System.out.println("Attempting to connected to " + SERVER + " on port " + PORT);
             clientConnection = new Socket(SERVER, PORT);
-            System.out.println("Successfully connected. Sending message now");
+            clientAddress = clientConnection.getLocalAddress().toString();
+            System.out.println("Successfully connected client ["+clientAddress+"] to server. Sending message now");
 
             OutputStream out = clientConnection.getOutputStream();
             dOut = new DataOutputStream(out);
@@ -71,6 +79,10 @@ public class Network implements Runnable {
         return clientConnection != null;
     }
 
+    public String getClientAddress() {
+    	return clientAddress;
+    }
+    
     public void disconnect() {
         connected = false;
     }
@@ -80,15 +92,13 @@ public class Network implements Runnable {
         while (true) {
             if(connected) {
                 try {
-                    if (commands.size() > 0) {
-                        debug("Command sending: " + commands.get(commands.size() - 1));
-                        dOut.writeUTF(commands.get(commands.size() - 1));
-                        commands.remove(commands.size() - 1);
-                    }
-                    answer = dIn.readUTF();
-                    handleIncomingPacket(answer);
-                    if (!answer.equals("Listening..."))
-                        debug(dIn.readUTF());
+                    InputStream in = clientConnection.getInputStream();
+                    dIn = new DataInputStream(in);
+                	handleIncomingPacket(dIn.readUTF());
+                   
+                    
+               
+                     //debug(dIn.readUTF());
 
 
                 } catch (SocketException e) {
@@ -104,45 +114,74 @@ public class Network implements Runnable {
         }
     }
 
-    public void handleIncomingPacket(String s) {
-        System.out.println("Received: " + s);
+    public void sendPacketToServer(String s) {
+    	
+    	if (( clientConnection.isClosed() || !(clientConnection.isConnected())) )
+    		return;
+    	if (clientConnection == null) 
+    		return;
+        DataOutputStream dOut = null;
+        try {
+            dOut = new DataOutputStream(clientConnection.getOutputStream());
+            
+            if ( (dOut != null)) {
+        		//debug("Sending packet: "+s+" to server at "+clientConnection.getRemoteSocketAddress()); //Runs
+        		
+        		dOut.writeUTF(s);  
+        		dOut.flush();
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+    public void handleIncomingPacket(String s) { 
+    	debug("INCOMING Packet from server: "+s);
+    	if (s.startsWith(Packets.P_GIVING_PIECES)) {
+    		//Server is sending us enemy pieces
+    		
+    		s = s.substring(Packets.P_GIVING_PIECES.length() + 1, s.length()); //+ 1 for the seperator
+    		//SaveLoad.convertPieces(s);
+    		System.out.println("Pieces");
+    		//System.out.println(s);
+    		NetworkPlayer np = (NetworkPlayer) Board.getEnemyPlayer();
+    		np.setPieces(SaveLoad.convertPiecesWithFlip(s));
+    		
+    		Board.addPieces(np.getSanitizedPieces());
+    		return;
+    	} 
     	switch (s) {
+    	
 	    	case Packets.P_INSETUP: 
 	    		Global.setBoardState(Global.BoardState.SETUP);
 	    		Global.setGameState(GameState.GAME);
+	    		Global.setGameType(true);
 	    		System.out.println("Set gamestate");
+	    		sendPacketToServer(Packets.P_STATUS_INSETUP);
 	    		break;
 	    	case Packets.P_INGAME:
-	    		Global.setGameState(Global.GameState.GAME);
+	    		Global.setBoardState(Global.BoardState.MY_TURN); // Last one to call this will go first
+	    		//Global.setGameState(Global.GameState.GAME);
+	    		System.out.println("Set gamestate to in game");
+	    		sendPacketToServer(Packets.P_STATUS_INGAME);
+
+	    		break;
+	    	
+
+	    		
 	    	default: 
+	    		System.out.println("Unknown request from server: "+s);
+
 	    		break;
     	}
+    	
     }
     public String getAnswer() {
     	return answer;
     }
-
-    /**
-     * Send commands to the server using this
-     *
-     * @param s Packet you want sent to server
-     */
-    public void addCommand(String s) {
-        commands.add(s);
-        debug("Added command: " + s + " | Size: " + commands.size());
-    }
-
-    /**
-     * remove commands from queue to the server using this
-     *
-     * @param s Packet you want to remove
-     */
-    public void removeCommand(String s) {
-        for (int i = 0; i < commands.size(); i++) {
-            if (commands.get(i).equals(s)) {
-                debug("Removing command: " + s);
-                commands.remove(i);
-            }
-        }
-    }
+    
+    
+    
+    
 }
