@@ -128,7 +128,7 @@ public class MainMenu implements Screen {
 
             buttonPressed = button_pvp;
             if (Global.connectedServer.connect())
-                Global.connectedServer.addCommand(Packets.P_QUEUE_PLAYER);
+                Global.connectedServer.sendPacketToServer(Packets.P_QUEUE_PLAYER);
             else
                 searchStatus = "Failed to connect to the server";
         } else if (button_ai.getBounds().contains(e.getPoint())
@@ -150,8 +150,7 @@ public class MainMenu implements Screen {
             clip.setMicrosecondPosition(0);
             // clip.start();
             if (Global.connectedServer.isConnected()) {
-                Global.connectedServer.removeCommand(Packets.P_QUEUE_PLAYER);
-                Global.connectedServer.addCommand(Packets.P_REMOVE_FROM_QUEUE);
+                Global.connectedServer.sendPacketToServer(Packets.P_REMOVE_FROM_QUEUE);
                 Global.connectedServer.disconnect();
             }
             buttonPressed = null;

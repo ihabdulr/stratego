@@ -60,5 +60,10 @@ public class Global {
     public static boolean isNetworkGame() {
         return networkGame;
     }
+    
+    public static Network getClient() {
+    	return connectedServer;
+    }
+
 
 }

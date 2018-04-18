@@ -30,16 +30,8 @@ public class MultiplayerQueue {
 		System.out.println("Added player to queue, queue count is now: "+playerQueue.size());
 	}
 	
-	public void removePlayer(String s) {
-		for (int i = 0; i < currentGames.size(); i++) {
-			if (playerQueue.get(i).getAddress().equals(s)) {
-				playerQueue.remove(i);
-				System.out.println("removed player from queue, queue count is now: "+playerQueue.size());
-				return;
-			}
-		}
-		System.out.println("Couldn't find player");
-
+	public void removePlayer(Player p) {
+		playerQueue.remove(p);
 	}
 	
 	public void removeGame(int index) { 
@@ -68,8 +60,8 @@ public class MultiplayerQueue {
 		if (playerQueue.size() > 1) {
 			Player a = playerQueue.get(0);
 			Player b = playerQueue.get(1);
-			removePlayer(a.getAddress());
-			removePlayer(b.getAddress());
+			removePlayer(a);
+			removePlayer(b);
 			GameSession gs = new GameSession(a, b, currentGames.size() + 1);
 			currentGames.add(gs);
 			System.out.println("Players A and B are in a match! ");
