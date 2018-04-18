@@ -1,0 +1,19 @@
+Meeting date: 18 April 18
+Meeting time: 1400-1500
+
+Attendance:
+Alek, Aaron, Jeremiah (all present)
+
+Meeting summary:
+Progress on AI and Network
+
+Accomplished since last meeting:
+AI functional and bugs were patched regarding attacks. Network now correctly sends pieces to each player, inversion performed.
+
+Accomplish before next meeting:
+Patch invalid move allowance, clean up network, verify AI is fully functional
+
+Individual issues:
+Aaron - More multiplayer fixes
+Alek - Fix various issues from beta testing
+Jeremiah - Continue improving AI, more AI testing
