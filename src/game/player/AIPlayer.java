@@ -1,23 +1,17 @@
 package game.player;
 
 import client.Global;
-import game.Animation;
 import game.Board;
 import game.GameLogic;
 import game.Piece;
-import game.Piece.PieceType;
 import game.SetupContainer;
-import javafx.util.Pair;
 
-import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-
-import com.apple.eawt.AppEvent.SystemSleepEvent;
 
 import static game.Board.SIZE_X;
 import static game.Board.SIZE_Y;
@@ -182,12 +176,12 @@ public class AIPlayer extends GamePlayer {
 			@Override
 			public int compare(pieceTracker o1, pieceTracker o2) {
 				// TODO Auto-generated method stub
-				if((o1.known==true&&o2.known==true))
+				if((o1.known && o2.known))
 					return 0;
 				
-				else if(o2.known==true)
+				else if(o2.known)
 					return 1;
-				else if(o1.known==true)
+				else if(o1.known)
 					return -1;
 				else if (o2.timesMoved==o1.timesMoved)
 					return 0;
@@ -253,7 +247,7 @@ public class AIPlayer extends GamePlayer {
     		 if(ecurrentPiece.getPieceType().getCombatValue()>currentPiece.getPieceType().getCombatValue()&&!ecurrentPiece.getPieceType().equals(Piece.PieceType.EMPTY)) {
     			 score+=2;
     			 for(pieceTracker p: guessedPieces) {
-    				 if(p.piece.getPosition().equals(ecurrentPiece.getPosition())&&p.known==true)
+    				 if(p.piece.getPosition().equals(ecurrentPiece.getPosition()) && p.known)
     					 score+=2;
     				 
     			 }
