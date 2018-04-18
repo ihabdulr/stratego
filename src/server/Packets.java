@@ -19,7 +19,13 @@ public final class Packets {
     public static final String P_SEND_PIECES = "SENDPIECES";									//Sends pieces to server as string
     public static final String P_SEPERATOR = ".";												//Separator	
     public static final String P_REQUEST_PIECE = "REQUESTPIECE";								//Requests a piece
+    public static final String P_GET_PIECES = "GETPIECES";										//Requests a piece
     public static final String P_INSETUP = "INSETUP";											//Sent to client when pvp starts
     public static final String P_INGAME = "INGAME";												//Sent to client when pvp starts
+    public static final String P_STATUS_INSETUP = "STATUS_SETUP";								//Asks the server to set player status
+    public static final String P_STATUS_READY = "STATUS_READY";								//Asks the server to set player status
+    public static final String P_STATUS_INGAME = "STATUS_GAME";								//Asks the server to set player status
+    public static final String P_GIVING_PIECES = "GIVINGPIECES";								//Sends all enemy pieces to client
 
+    
 }
