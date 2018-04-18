@@ -81,10 +81,47 @@ public class Board implements Screen {
         return pieces;
     }
 
+    
+    public static void setPieces(java.util.List<Piece> list) {
+    	pieces = new Piece[SIZE_X][SIZE_Y];
+    	removeAllPieces();
+    	list.stream().forEach(i -> {
+    		pieces[i.getColumn()][i.getRow()] = i.clone();
+    	});
+    }
+    
     public static void addPieces(java.util.List<Piece> p) {
         p.forEach(i -> {
             pieces[i.getColumn()][i.getRow()] = i;
         });
+    }
+  
+    public static void removeAllPieces() {
+    	for (int x = 0; x < SIZE_X; ++x)
+    		for (int y = 0; y < SIZE_Y; ++y) {
+    			Piece p = getPiece(x,y);
+				//System.out.println("removing piece("+x+","+y+")");   			
+    			
+                pieces[x][y] = new Piece(Piece.PieceType.EMPTY).setPosition(x, y);
+    			
+    		}
+    	 pieces[3][3] = new Piece(Piece.PieceType.BLOCK).setPosition(3, 3);
+         pieces[3][4] = new Piece(Piece.PieceType.BLOCK).setPosition(3, 4);
+         pieces[4][3] = new Piece(Piece.PieceType.BLOCK).setPosition(4, 3);
+         pieces[4][4] = new Piece(Piece.PieceType.BLOCK).setPosition(4, 4);
+    }
+    public static void removeEnemyPieces() { //Leaves us with the position of the piece moved
+    	for (int x = 0; x < SIZE_X; ++x)
+    		for (int y = 0; y < SIZE_Y; ++y) {
+    			Piece p = getPiece(x,y);
+				//System.out.println("removing piece("+x+","+y+")");
+
+    			if (getEnemyPlayer().hasPiece(p)) {
+    				//System.out.println("removing piece");
+    				getEnemyPlayer().removePiece(p);
+                    pieces[x][y] = new Piece(Piece.PieceType.EMPTY).setPosition(x, y);
+    			}
+    		}    	
     }
 
     private static SetupContainer setupContainer = new SetupContainer(15, 64 * SIZE_Y + 48, Global.WIDTH - 31, 160);
@@ -138,7 +175,7 @@ public class Board implements Screen {
         }
         readyButton.setEnabled(true);
     }
-
+    
     public static Piece getPiece(int col, int row) {
         return pieces[col][row];
     }
@@ -153,6 +190,7 @@ public class Board implements Screen {
             Board.getEnemyPlayer().movePiece(piece, dest.getPosition());
         pieces[dest.getColumn()][dest.getRow()] = pieces[piece.getColumn()][piece.getRow()].clone().setPosition(dest.getPosition());
         pieces[piece.getColumn()][piece.getRow()] = dest.clone().setPosition(piece.getPosition());
+        
     }
 
     public static void addCapturedPiece(Piece.PieceType pieceType) {
@@ -184,7 +222,10 @@ public class Board implements Screen {
             movePiece(start, end);
             if(!Global.isNetworkGame()&&Board.getCurrentOpposingPlayer().equals(Board.getEnemyPlayer()))
         			AIPlayer.updatetracker(start, end, AIPlayer.moveUpdate.MOVE);
+            
+           // Global.getClient().sendPacketToServer(P_UPDATE); 		
             selectedPiece = null;
+            
             return getCurrentPlayer().hasAtLeastOneMovablePiece() ? TurnState.VALID : TurnState.NO_MORE;
         }
 
@@ -216,10 +257,23 @@ public class Board implements Screen {
                             TurnState result = move(selectedPiece, i);
                             if (result.equals(TurnState.VALID)) {
                                 Global.setBoardState(Global.BoardState.THEIR_TURN);
+                                if (Global.isNetworkGame()) {
+                                	java.util.List<Piece> lp = new ArrayList<>();
+                                	for(int k = 0; k < localPlayer.getPieces().size(); k++) {
+                                		Piece p = localPlayer.getPieces().get(k);
+                                		
+                                		if (!enemyPlayer.getPieces().contains(p)) {
+                                			lp.add(p); //Add local player
+                                		}
+                                	}
+	                            	Global.getClient().sendPacketToServer(Packets.P_UPDATE_LOCAL + Packets.P_SEPERATOR + SaveLoad.getPiecesAsString(lp));
+	                            	Global.getClient().sendPacketToServer(Packets.P_UPDATE_ENEMY + Packets.P_SEPERATOR + SaveLoad.getPiecesAsString(enemyPlayer.getPieces()));
+                                	//Global.getClient().sendPacketToServer
+	                            	Global.getClient().sendPacketToServer(Packets.P_SWITCH_TURNS);
+                                }
                                 if (!Global.isNetworkGame())
                                 	((AIPlayer) enemyPlayer).nextMove();
-                               // else 
-                               // 	((NetworkPlayer) enemyPlayer).nextMove();
+                              
                             } else if (result.equals(TurnState.NO_MORE)) {
                                 Global.setBoardState(Global.BoardState.GAME_LOSS);
                             } else if (result.equals(TurnState.FLAG_CAPTURED)) {
@@ -274,18 +328,20 @@ public class Board implements Screen {
 									@Override
 									public boolean condition() {
 										// TODO Auto-generated method stub
+										boolean test1 = (pieces != null);
+										//System.out.println("network player pieces set : "+test1);
 										return (pieces != null);
 									}
 
 									@Override
 									public void call() {
 										// TODO Auto-generated method stub
-										pieces = enemyPlayer.getSanitizedPieces();
+										pieces = enemyPlayer.getPieces();
 									}
                                 });
                                 t.start();
                                 if (enemyPlayer.getSanitizedPieces() != null)
-                                	addPieces(enemyPlayer.getSanitizedPieces());
+                                	addPieces(enemyPlayer.getPieces());
 
                             }
 

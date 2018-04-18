@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import client.Global.GameState;
 import game.Board;
+import game.Piece;
 import game.SaveLoad;
 import game.player.NetworkPlayer;
 import server.Packets;
@@ -34,9 +35,7 @@ public class Network implements Runnable {
     private String clientAddress;
     private boolean connected = false;
     private String answer = "";
-    private int connectedPlayers = 0;
     private boolean started = false;
-
 
     public Network(int port, String server) {
         PORT = port;
@@ -48,11 +47,6 @@ public class Network implements Runnable {
             String timeStamp = new SimpleDateFormat("hh:mm:ss").format(new Date());
             System.out.println("\t[" + timeStamp + "]: " + s);
         }
-    }
-
-    //TODO: On ping return number of players total in queue and playing
-    public int getConnectedPlayers() {
-        return connectedPlayers;
     }
 
     public boolean isConnected() {
@@ -144,18 +138,46 @@ public class Network implements Runnable {
 
     }
     public void handleIncomingPacket(String s) { 
-    	debug("INCOMING Packet from server: "+s);
+    	//debug("INCOMING Packet from server: "+s);
     	if (s.startsWith(Packets.P_GIVING_PIECES)) {
     		//Server is sending us enemy pieces
     		
     		s = s.substring(Packets.P_GIVING_PIECES.length() + 1, s.length()); //+ 1 for the seperator
-    		//SaveLoad.convertPieces(s);
+    	
     		System.out.println("Pieces");
-    		//System.out.println(s);
     		NetworkPlayer np = (NetworkPlayer) Board.getEnemyPlayer();
     		np.setPieces(SaveLoad.convertPiecesWithFlip(s));
-    		
     		Board.addPieces(np.getSanitizedPieces());
+    		return;
+    	} 
+    	
+    	if (s.startsWith(Packets.P_SEND_BOARD)) {
+    		//Server is sending us enemy pieces
+    		
+    		s = s.substring(Packets.P_SEND_BOARD.length() + 1, s.length()); //+ 1 for the seperator
+    		//NetworkPlayer np = (NetworkPlayer) Board.getEnemyPlayer();    		
+    		//np.setPieces(SaveLoad.convertPiecesWithFlip(s));
+    		
+    		
+    		((NetworkPlayer)Board.getEnemyPlayer()).setPieces(SaveLoad.convertPiecesWithFlip(s));
+    		
+    		java.util.List<Piece> pieces = new ArrayList<>();
+    		pieces.addAll(Board.getEnemyPlayer().getSanitizedPieces());
+    		pieces.addAll(Board.getLocalPlayer().getPieces());
+    		Board.setPieces(pieces);
+    		System.out.println("updating board pieces");
+    	
+    		return;
+    	} 
+    	if (s.startsWith(Packets.P_REQUEST_PIECE)) {
+    		//Server is sending us enemy pieces
+    		
+    		s = s.substring(Packets.P_REQUEST_PIECE.length() + 1, s.length()); //+ 1 for the seperator
+    		System.out.println("rPieces");
+    		System.out.println(s);
+    		NetworkPlayer np = (NetworkPlayer) Board.getEnemyPlayer(); //getCurrentOpposingPlayer()
+    		np.setAsked(s);
+    		
     		return;
     	} 
     	switch (s) {
@@ -169,12 +191,20 @@ public class Network implements Runnable {
 	    		break;
 	    	case Packets.P_INGAME:
 	    		Global.setBoardState(Global.BoardState.MY_TURN); // Last one to call this will go first
+	    		Global.setBoardState(Global.BoardState.THEIR_TURN); 
 	    		//Global.setGameState(Global.GameState.GAME);
 	    		System.out.println("Set gamestate to in game");
 	    		sendPacketToServer(Packets.P_STATUS_INGAME);
+	    		
+	    		break;
+	    		
+	    	case Packets.P_YOURTURN: 
+	    		Global.setBoardState(Global.BoardState.MY_TURN); // Last one to call this will go first
 
 	    		break;
-	    	
+	    	case Packets.P_THEIRTURN: 
+	    		Global.setBoardState(Global.BoardState.THEIR_TURN); // Last one to call this will go first
+	    		break;
 
 	    		
 	    	default: 

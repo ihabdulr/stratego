@@ -108,7 +108,7 @@ public class Server implements Runnable {
 				// this) );
 				Player pp = new Player();
 				pp.setClientAddress(socket.getRemoteSocketAddress().toString());
-				executor.submit(addClient(new SocketHandler(socket, getNumberOfConnections() + 1, this, pp)));
+				executor.submit(addClient(new SocketHandler(socket, getNumberOfConnections() + 1, this, pp, null)));
 				// SocketHandler s = new SocketHandler(socket, getNumberOfConnections() + 1,
 				// this);
 				// addClient(s);
@@ -128,7 +128,16 @@ public class Server implements Runnable {
 						if (gs != null) {
 							debug("Game session: Player 1: " + gs.getPlayer1().getAddress() + " | Player 2: "
 									+ gs.getPlayer2().getAddress() + " | Index : " + gs.getGameIndex());
+							if (gs.getPlayer1().getAddress().equals(socket.getRemoteSocketAddress().toString())) {
+								connections.get(gs.getPlayer1().getAddress()).setOpponent(gs.getPlayer2());
+								System.out.println("Set opponent for p1");
 
+							}
+							if (gs.getPlayer2().getAddress().equals(socket.getRemoteSocketAddress().toString())) {
+								//Setting opponent player in socket handler
+								connections.get(gs.getPlayer1().getAddress()).setOpponent(gs.getPlayer1());
+								System.out.println("Set opponent for p2");
+							}
 							pairedClients.put(connections.get(gs.getPlayer1().getAddress()),
 									connections.get(gs.getPlayer2().getAddress()));
 							SessionLoop sl = new SessionLoop(connections.get(gs.getPlayer1().getAddress()), connections.get(gs.getPlayer2().getAddress()));

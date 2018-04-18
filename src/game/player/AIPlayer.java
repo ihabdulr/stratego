@@ -1,11 +1,15 @@
 package game.player;
 
 import client.Global;
+import game.Animation;
 import game.Board;
 import game.GameLogic;
 import game.Piece;
+import game.Piece.PieceType;
 import game.SetupContainer;
+import javafx.util.Pair;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -21,31 +25,46 @@ import static game.Board.SIZE_Y;
  */
 public class AIPlayer extends GamePlayer {
 
-	
-	class pieceTracker {
-		public Piece piece;
-	    public int timesMoved;
-	    public boolean known;
-		public pieceTracker(Piece p, int i) {
-			piece=p;
-			timesMoved=i;
-			known=false;
-				}		 
-		}
-	class bestMove{
-		public Piece beststart;
+    class pieceTracker {
+        public Piece piece;
+        public int timesMoved;
+        public boolean known;
 
-		public Piece bestend;
-		public  bestMove(Piece p,Piece e) {
-			beststart=p;
-			bestend=e;
-			}
-		}
+        public pieceTracker(Piece p, int i) {
+            piece = p;
+            timesMoved = i;
+            known = false;
+        }
+    }
+
+    class bestmovemade {
+        public Piece beststart;
+
+        public Piece bestend;
+
+        public bestmovemade(Piece p, Piece e) {
+            beststart = p;
+            bestend = e;
+        }
+    }
+
+    class bestmove {
+        public Piece beststart;
+        public int score;
+        public Piece bestend;
+
+        public bestmove(Piece p, Piece e, int i) {
+            beststart = p;
+            bestend = e;
+            score = i;
+
+        }
 
 
+    }
 
-
-    private static  java.util.List<pieceTracker> guessedPieces = new ArrayList<pieceTracker>();
+    private static java.util.List<pieceTracker> guessedPieces = new ArrayList<pieceTracker>();
+    private static int agresivep = 0;
     private final static int MAX_SCOUT = 7;
     private final static int MAX_BOMB_DEFUSER = 3;
     private final static int MAX_MINION = 6;
@@ -54,14 +73,12 @@ public class AIPlayer extends GamePlayer {
     private final static int MAX_SKULL_KING = 1;
     private final static int MAX_SKULL_PRINCE = 1;
     private final static int MAX_FLAG = 1;
-    public Piece currentPiece;
-    public Piece ecurrentPiece;
     public static int turnnum;
 
     private static HashMap<String, Integer> piececounter = new HashMap<>();
 
     public AIPlayer() {
-        this(0);
+        this(1);
     }
 
     public AIPlayer(int mode) {
@@ -87,6 +104,16 @@ public class AIPlayer extends GamePlayer {
             myPieces.add(new Piece(Piece.PieceType.MINION).setPosition(0, 0));
         }
 
+
+        piececounter.put(Piece.PieceType.FLAG.name(), 0);
+        piececounter.put(Piece.PieceType.MINION.name(), 0);
+        piececounter.put(Piece.PieceType.BOMB.name(), 0);
+        piececounter.put(Piece.PieceType.MINOTAUR.name(), 0);
+        piececounter.put(Piece.PieceType.SCOUT.name(), 0);
+        piececounter.put(Piece.PieceType.SKULL_KING.name(), 0);
+        piececounter.put(Piece.PieceType.SKULL_PRINCE.name(), 0);
+        piececounter.put(Piece.PieceType.BOMB_DEFUSER.name(), 0);
+
     }
 
     public void intilizemap() {
@@ -100,30 +127,35 @@ public class AIPlayer extends GamePlayer {
         piececounter.put(Piece.PieceType.BOMB_DEFUSER.name(), 0);
 
     }
+    ///here
 
-    public java.util.List<java.util.List<Piece>> testmove(Piece start, Piece end, java.util.List<Piece> enemypieces, java.util.List<Piece> mypieces) {
+    public java.util.List<java.util.List<Piece>> fakemove(Piece start, Piece end, java.util.List<Piece> enemypieces, java.util.List<Piece> mypieces) {
         for (Piece piece : enemypieces) {
             if (end.getPosition().equals(piece.getPosition()))
-                return testattack(start, piece, enemypieces, mypieces);
-        		}
-        
+                return fakeattack(start, piece, enemypieces, mypieces);
+
+        }
         for (Piece piece : mypieces) {
             if (start.getPosition().equals(piece.getPosition())) {
                 piece.setPosition(end.getPosition());
                 break;
-            	}
+            }
+
+
         }
-        
         java.util.List<java.util.List<Piece>> temp = new ArrayList<java.util.List<Piece>>();
         temp.add(mypieces);
         temp.add(enemypieces);
         return temp;
+
+
     }
 
 
-    private java.util.List<java.util.List<Piece>> testattack(Piece aPiece, Piece dPiece, List<Piece> enemypieces, List<Piece> mypieces) {
-    		
-    	if (dPiece.getPieceType().isPieceSpecial()) {
+    private java.util.List<java.util.List<Piece>> fakeattack(Piece aPiece, Piece dPiece, List<Piece> enemypieces, List<Piece> mypieces) {
+
+
+        if (dPiece.getPieceType().isPieceSpecial()) {
             switch (dPiece.getPieceType()) {
                 case BOMB:
                     if (aPiece.getPieceType().equals(Piece.PieceType.BOMB_DEFUSER)) {
@@ -142,8 +174,14 @@ public class AIPlayer extends GamePlayer {
             }
         } else {
             if (aPiece.getPieceType().getCombatValue() == dPiece.getPieceType().getCombatValue()) {
+
+                //Board.setPiece(aPiece.getColumn(), aPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+                //Board.setPiece(dPiece.getColumn(), dPiece.getRow(), new Piece(Piece.PieceType.EMPTY));
+
                 mypieces.remove(aPiece);
                 enemypieces.remove(dPiece);
+
+
             } else if (aPiece.getPieceType().getCombatValue() > dPiece.getPieceType().getCombatValue()) {
                 mypieces.remove(aPiece);
 
@@ -154,9 +192,12 @@ public class AIPlayer extends GamePlayer {
                 }
 
                 enemypieces.remove(dPiece);
+
+                //Board.getCurrentPlayer().movePiece(aPiece, Board.getCurrentOpposingPlayer().getPiece(dPiece));
+
+
             }
         }
-    	
         java.util.List<java.util.List<Piece>> temp = new ArrayList<java.util.List<Piece>>();
         temp.add(mypieces);
         temp.add(enemypieces);
@@ -168,29 +209,10 @@ public class AIPlayer extends GamePlayer {
     public enum moveUpdate {MOVE, ATTACKLOSS, ATTACKWIN, TIE}
 
     public enum Turn {AI, LOCAL}
-    
-    
+    //guessed enemy pices by movement 
+
     public static List<Piece> guessesBoard() {
-    		//sorting pieces by times moved
-    		Collections.sort(guessedPieces, new Comparator<pieceTracker>(){
-			@Override
-			public int compare(pieceTracker o1, pieceTracker o2) {
-				// TODO Auto-generated method stub
-				if((o1.known && o2.known))
-					return 0;
-				
-				else if(o2.known)
-					return 1;
-				else if(o1.known)
-					return -1;
-				else if (o2.timesMoved==o1.timesMoved)
-					return 0;
-				else
-				return o1.timesMoved > o2.timesMoved ? -1 : 1;
-			}
-		});
-    		
-    		//guessing enemy pieces by movement 
+
         List<Piece> guessedp = new ArrayList<Piece>();
         for (pieceTracker pt : guessedPieces) {
             if (!pt.piece.getPieceType().equals(Piece.PieceType.GENERIC)) {
@@ -241,47 +263,42 @@ public class AIPlayer extends GamePlayer {
     }
 
     public int Scorer(java.util.List<Piece> aipieces, java.util.List<Piece> playerpieces, int depth) {
-       int score=0;
-       score=6-currentPiece.getPieceType().getCombatValue();
-    		 score += aipieces.size() - playerpieces.size();
-    		 if(ecurrentPiece.getPieceType().getCombatValue()>currentPiece.getPieceType().getCombatValue()&&!ecurrentPiece.getPieceType().equals(Piece.PieceType.EMPTY)) {
-    			 score+=2;
-    			 for(pieceTracker p: guessedPieces) {
-    				 if(p.piece.getPosition().equals(ecurrentPiece.getPosition()) && p.known)
-    					 score+=2;
-    				 
-    			 }
-    		 }
-    		 if((ecurrentPiece.getRow()-currentPiece.getRow())>0)
-    			 score+=1;
-    		 if(ecurrentPiece.getPieceType().getCombatValue()<currentPiece.getPieceType().getCombatValue()&&!ecurrentPiece.getPieceType().equals(Piece.PieceType.EMPTY))
-    			 score-=6;
-    		 if(ecurrentPiece.getPieceType().equals(Piece.PieceType.FLAG))
-    			 score+=1000;
-    		 if(ecurrentPiece.getPieceType().equals(Piece.PieceType.BOMB)&&currentPiece.getPieceType().equals(Piece.PieceType.BOMB_DEFUSER))
-    			 score+=3;
-    		
-    		 
-    		 
+        int score = aipieces.size() - playerpieces.size();
+
+    		/*boolean flag=false;
+    		for(Piece p: playerpieces) {
+    			if(p.getPieceType().equals(Piece.PieceType.FLAG)) {
+    				flag=true;
+    			}
+    		}
+    		if(flag==false)
+    			return 1000;
+    		boolean aiflag=false;
+    		for(Piece p: aipieces) {
+    			if(p.getPieceType().equals(Piece.PieceType.FLAG)) {
+    				aiflag=true;
+    			}
+    		}
+    		if(aiflag==false)
+    			return -1000;
+    		*/
+
         return score;
     }
 
     //best move for ai
-    public bestMove getBestmove(java.util.List<Piece> aipieces, java.util.List<Piece> playerpieces, int depth) {
+    public bestmovemade getBestmove(java.util.List<Piece> aipieces, java.util.List<Piece> playerpieces, int depth) {
 
         int current;
-        bestMove bm = null;
+        bestmovemade bm = null;
         int max = Integer.MIN_VALUE;
         int min = Integer.MAX_VALUE;
         Collections.shuffle(aipieces);
         for (Piece piece : aipieces) {
             java.util.List<Piece> temp = new ArrayList<Piece>();
-            temp.addAll(testgetMovableTiles(piece, aipieces, playerpieces));
-            currentPiece=piece;
+            temp.addAll(fakegetMovableTiles(piece, aipieces, playerpieces));
             if (!temp.isEmpty()) {
                 for (Piece p : temp) {
-                	ecurrentPiece=p;
-                		
 
                     java.util.List<java.util.List<Piece>> listtemp = new ArrayList<java.util.List<Piece>>();
                     java.util.List<Piece> atemplist = new ArrayList<Piece>();
@@ -293,14 +310,14 @@ public class AIPlayer extends GamePlayer {
                         ptemplist.add(t.clone());
                     }
 
-                    listtemp = testmove(piece, p, ptemplist, atemplist);
+                    listtemp = fakemove(piece, p, ptemplist, atemplist);
 
                     current = min(listtemp.get(0), listtemp.get(1), depth - 1);
                     //System.out.println(max);
 
                     if (max < current) {
                         max = current;
-                        bm = new bestMove(piece, p);
+                        bm = new bestmovemade(piece, p);
 
                     }
 
@@ -312,7 +329,6 @@ public class AIPlayer extends GamePlayer {
     }
 
     public int max(java.util.List<Piece> aipieces, java.util.List<Piece> playerpieces, int depth) {
-    		
         //System.out.println(depth);
         if (depth == 0)
             return Scorer(aipieces, playerpieces, depth);
@@ -320,7 +336,7 @@ public class AIPlayer extends GamePlayer {
         int max = Integer.MIN_VALUE;
         //HashMap<Piece,java.util.List<Piece> > aimoves = new HashMap<>();
         for (Piece piece : aipieces) {
-            java.util.List<Piece> temp = testgetMovableTiles(piece, aipieces, playerpieces);
+            java.util.List<Piece> temp = fakegetMovableTiles(piece, aipieces, playerpieces);
             if (!temp.isEmpty()) {
                 for (Piece p : temp) {
                     java.util.List<java.util.List<Piece>> listtemp = new ArrayList<java.util.List<Piece>>();
@@ -334,7 +350,7 @@ public class AIPlayer extends GamePlayer {
                     }
 
 
-                    listtemp = testmove(piece, p, ptemplist, atemplist);
+                    listtemp = fakemove(piece, p, ptemplist, atemplist);
 
                     int current = min(listtemp.get(0), listtemp.get(1), depth - 1);
 
@@ -350,14 +366,14 @@ public class AIPlayer extends GamePlayer {
     }
 
     public int min(java.util.List<Piece> aipieces, java.util.List<Piece> playerpieces, int depth) {
-        
+        // 	System.out.println(depth);
         if (depth == 0)
             return Scorer(aipieces, playerpieces, depth);
 
         int min = Integer.MAX_VALUE;
-       
+        //HashMap<Piece,java.util.List<Piece> > aimoves = new HashMap<>();
         for (Piece piece : aipieces) {
-            java.util.List<Piece> temp = testgetMovableTiles(piece, playerpieces, aipieces);
+            java.util.List<Piece> temp = fakegetMovableTiles(piece, playerpieces, aipieces);
             if (!temp.isEmpty()) {
                 for (Piece p : temp) {
                     java.util.List<java.util.List<Piece>> listtemp = new ArrayList<java.util.List<Piece>>();
@@ -371,7 +387,7 @@ public class AIPlayer extends GamePlayer {
                     }
 
 
-                    listtemp = testmove(piece, p, atemplist, ptemplist);
+                    listtemp = fakemove(piece, p, atemplist, ptemplist);
 
                     int current = max(listtemp.get(1), listtemp.get(0), depth - 1);
                     if (current < min) {
@@ -385,72 +401,77 @@ public class AIPlayer extends GamePlayer {
 
     }
 
-	
-    
-    
-    
-    
-    
-    
-    public static void updatetracker(Piece p,Piece pd,moveUpdate move) {
-    	
-    		if(move.equals(moveUpdate.ATTACKWIN)) {
-    			for(pieceTracker pt: guessedPieces) {
-    				if(pt.piece.getPosition().equals(p.getPosition())) {
-    					pt.piece.setPieceType(p.getPieceType()).setPosition(pd.getPosition());
-    					pt.known=true;
-    					int cdist=Math.abs((p.getColumn()-pd.getColumn()));
-           			int rdist=Math.abs((p.getRow()-pd.getRow()));
-           			if(cdist>rdist)
-           				pt.timesMoved=cdist;
-           			else
-           				pt.timesMoved=rdist;	
-    					break;
-    				}
-    				}	
-    			}
-    		else	 if(move.equals(moveUpdate.ATTACKLOSS)||move.equals(moveUpdate.TIE)) {
-    			for(pieceTracker pt: guessedPieces) {
-    				if(pt.piece.getPosition().equals(p.getPosition())) {
-    					guessedPieces.remove(pt);
-    					break;
-    				}
-    					
-    				}
-    			}
-    		else if(move.equals(moveUpdate.MOVE)) {
-    			for(pieceTracker pt: guessedPieces) {
-    				if(pt.piece.getPosition().equals(p.getPosition())) {
-    					pt.piece.setPosition(pd.getPosition());
-    					int cdist=Math.abs((p.getColumn()-pd.getColumn()));
-               			int rdist=Math.abs((p.getRow()-pd.getRow()));
-               			if(cdist>rdist) {
-               				pt.timesMoved+=cdist;
-               				if(cdist>1) {
-               					pt.piece.setPieceType(Piece.PieceType.SCOUT);
-               					pt.known=true;
-               				}
-               			}
-               			else {
-               				pt.timesMoved+=rdist;
-               				if(rdist>1) {
-               					pt.piece.setPieceType(Piece.PieceType.SCOUT);
-               					pt.known=true;
-               				}
-               			}
-               			
-    					break;
-    				}
-    				
-    				
-    				}
-    			}
-		
-			
-			
-							
-}
-   
+    public static void updatetracker(Piece p, Piece pd, moveUpdate move) {
+
+        if (move.equals(moveUpdate.ATTACKWIN)) {
+            for (pieceTracker pt : guessedPieces) {
+                if (pt.piece.getPosition().equals(p.getPosition())) {
+                    pt.piece.setPieceType(p.getPieceType()).setPosition(pd.getPosition());
+                    pt.known = true;
+                    int cdist = Math.abs((p.getColumn() - pd.getColumn()));
+                    int rdist = Math.abs((p.getRow() - pd.getRow()));
+                    if (cdist > rdist)
+                        pt.timesMoved = cdist;
+                    else
+                        pt.timesMoved = rdist;
+                    break;
+                }
+            }
+        } else if (move.equals(moveUpdate.ATTACKLOSS) || move.equals(moveUpdate.TIE)) {
+            for (pieceTracker pt : guessedPieces) {
+                if (pt.piece.getPosition().equals(p.getPosition())) {
+                    guessedPieces.remove(pt);
+                    break;
+                }
+
+            }
+        } else if (move.equals(moveUpdate.MOVE)) {
+            for (pieceTracker pt : guessedPieces) {
+                if (pt.piece.getPosition().equals(p.getPosition())) {
+                    pt.piece.setPosition(pd.getPosition());
+                    int cdist = Math.abs((p.getColumn() - pd.getColumn()));
+                    int rdist = Math.abs((p.getRow() - pd.getRow()));
+                    if (cdist > rdist) {
+                        pt.timesMoved += cdist;
+                        if (cdist > 1) {
+                            pt.piece.setPieceType(Piece.PieceType.SCOUT);
+                            pt.known = true;
+                        }
+                    } else {
+                        pt.timesMoved += rdist;
+                        if (rdist > 1) {
+                            pt.piece.setPieceType(Piece.PieceType.SCOUT);
+                            pt.known = true;
+                        }
+                    }
+
+                    break;
+                }
+
+
+            }
+        }
+
+        Collections.sort(guessedPieces, new Comparator<pieceTracker>() {
+            @Override
+            public int compare(pieceTracker o1, pieceTracker o2) {
+                // TODO Auto-generated method stub
+                if ((o1.known && o2.known))
+                    return 0;
+
+                else if (o2.known)
+                    return 1;
+                else if (o1.known)
+                    return -1;
+                else if (o2.timesMoved == o1.timesMoved)
+                    return 0;
+                else
+                    return o1.timesMoved > o2.timesMoved ? -1 : 1;
+            }
+        });
+
+
+    }
 
     @Override
     public boolean hasAtLeastOneMovablePiece() {
@@ -490,8 +511,6 @@ public class AIPlayer extends GamePlayer {
         return false;
     }
 
-    
-
 
     public boolean nextMove() {
         intilizemap();
@@ -504,22 +523,36 @@ public class AIPlayer extends GamePlayer {
         }
 
         //bestmove bm= miniMax(tempai, tempenemy, 1, null, null, Turn.AI, -1000);
-        bestMove bmade = getBestmove(tempai, tempenemy, 2);
-        System.out.println("Enemy moving: " + bmade.beststart.getPieceType() + " to " + Board.getPiece(bmade.bestend.getColumn(),bmade.bestend.getRow()).getPieceType() + " " + Board.getPiece(bmade.bestend.getColumn(),bmade.bestend.getRow()).getPosition() + bmade.beststart.getPosition());
-        System.out.println("Thinks:"+bmade.bestend.getPieceType());
+        bestmovemade bmade = getBestmove(tempai, tempenemy, 1);
         Board.TurnState state = Board.move(bmade.beststart, bmade.bestend);
+        System.out.println("Enemy moving: " + bmade.beststart.getPieceType() + " to " + bmade.bestend.getPieceType() + " " + bmade.bestend.getPosition() + bmade.beststart.getPosition());
         if (state.equals(Board.TurnState.VALID)) {
             Global.setBoardState(Global.BoardState.MY_TURN);
             return true;
         } else
             Global.setBoardState(Global.BoardState.GAME_WON);
-        
+       /* for (Piece piece : myPieces) {
+            java.util.List<Piece> available = GameLogic.getMovableTiles(piece);
+            
+            if (!available.isEmpty()) {
+                Board.TurnState state = Board.move(piece, available.get(0));
+                System.out.println("Enemy moving: " + piece.getPosition() + " to " + available.get(0).getPosition());
+                if(state.equals(Board.TurnState.VALID)) {
+                    Global.setBoardState(Global.BoardState.MY_TURN);
+                    return true;
+                }
+                else
+                    Global.setBoardState(Global.BoardState.GAME_WON);
 
+            }
+        }
+        */
+        Global.setBoardState(Global.BoardState.GAME_WON);
         return false;
     }
 
 
-    public static java.util.List<Piece> testgetMovableTiles(Piece piece, java.util.List<Piece> mypieces, java.util.List<Piece> epieces) {
+    public static java.util.List<Piece> fakegetMovableTiles(Piece piece, java.util.List<Piece> mypieces, java.util.List<Piece> epieces) {
         java.util.List<Piece> pieces = new ArrayList<Piece>();
         if (piece != null) {
             if (piece.getPieceType().getCombatValue() == -1)
@@ -571,8 +604,18 @@ public class AIPlayer extends GamePlayer {
         return pieces;
     }
 
+
+}
+
+
+ 
+    
+    
+    
+    
+    
+    
     
     
 
-}
 

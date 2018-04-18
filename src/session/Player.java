@@ -21,7 +21,7 @@ public class Player {
 		private  java.util.List<Piece> pieces;
 		private  String clientAddress; //if empty, not playing multiplayer
 		private Status playerStatus = Status.MAIN_MENU;
-		
+		private boolean isTurn = false;
 		public enum Status
 	    {
 	        MAIN_MENU, SETUP, READY, IN_GAME;
@@ -66,5 +66,13 @@ public class Player {
 		
 		public void printPieces() {
 			System.out.println("PLAYER PIECES: "+pieces);
+		}
+		
+		public void setTurn(boolean b) {
+			isTurn = b;
+		}
+		
+		public boolean isTurn() {
+			return isTurn;
 		}
 }

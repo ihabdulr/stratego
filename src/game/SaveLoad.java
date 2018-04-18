@@ -22,7 +22,18 @@ public class SaveLoad {
         }
         return playerSetup;
     }
-
+    
+    public static String getBoardAsString(Piece[][] pp) {
+    	String playerSetup = "";
+    	for (int c = 0; c < pp.length; c++) {
+    		for (int r = 0; r < pp.length; r++) {
+    			Piece p = Board.getPiece(c, r);
+    			playerSetup += getPieceAsString(p); 
+    		}
+    	}
+    	return playerSetup;
+    }
+    
     public static String getPiecesAsString(java.util.List pieces) {
         String playerSetup = "";
         for (int x = 0; x < pieces.size(); ++x) {
@@ -104,9 +115,14 @@ public class SaveLoad {
             String[] props = piece.split(":");
             int col = Integer.parseInt(props[1]);
             int row = Integer.parseInt(props[2]);
-            System.out.println("old row = "+col);
+            //System.out.println("old row = "+row+ " and old col = " +col);
             int k = row + 1;
             row = (8 % k);
+            
+            int j = col;
+            col = (j % 8);
+           // System.out.println("new "+row+ " and new  col = " +col);
+
             //System.out.println("old row = "+ (k - 1)+ " , new row = "+row);
             //row = row % 8;
             String pieceName = props[0];

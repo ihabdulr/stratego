@@ -74,10 +74,7 @@ public class GameLogic {
             } else {
                 System.out.println("Attacked an opponent with a higher number");
                 Board.getCurrentOpposingPlayer().removePiece(dPiece);
-                if(Board.getCurrentPlayer().equals(Board.getEnemyPlayer()))
-                		Board.getCurrentPlayer().movePiece(aPiece, dPiece);
-                else
-                		Board.getCurrentPlayer().movePiece(dPiece, aPiece);
+                Board.getCurrentPlayer().movePiece(aPiece, dPiece);
                 
                 
                 if(!Global.isNetworkGame()&&Board.getCurrentOpposingPlayer().equals(Board.getEnemyPlayer())) 
