@@ -27,6 +27,7 @@ public class Network implements Runnable {
     private Socket clientConnection = null;
     private boolean connected = false;
     private String answer = "";
+    private int connectedPlayers = 0;
 
 
     public Network(int port, String server) {
@@ -39,6 +40,11 @@ public class Network implements Runnable {
             String timeStamp = new SimpleDateFormat("hh:mm:ss").format(new Date());
             System.out.println("\t[" + timeStamp + "]: " + s);
         }
+    }
+
+    //TODO: On ping return number of players total in queue and playing
+    public int getConnectedPlayers() {
+        return connectedPlayers;
     }
 
     public boolean isConnected() {
