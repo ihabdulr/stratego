@@ -28,4 +28,7 @@ public class GameSession {
 		return player2;
 	}
 	
+	public int getGameIndex() {
+		return gameIndex;
+	}
 }

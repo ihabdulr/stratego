@@ -99,7 +99,7 @@ public class Board implements Screen {
             this.offset = offset;
         }
 
-        int getOffset() {
+        public int getOffset() {
             return offset;
         }
     }
@@ -182,6 +182,8 @@ public class Board implements Screen {
         //simple swap
         if (end.getPieceType().equals(Piece.PieceType.EMPTY)) {
             movePiece(start, end);
+            if(!Global.isNetworkGame()&&Board.getCurrentOpposingPlayer().equals(Board.getEnemyPlayer()))
+        			AIPlayer.updatetracker(start, end, AIPlayer.moveUpdate.MOVE);
             selectedPiece = null;
             return getCurrentPlayer().hasAtLeastOneMovablePiece() ? TurnState.VALID : TurnState.NO_MORE;
         }
@@ -214,7 +216,10 @@ public class Board implements Screen {
                             TurnState result = move(selectedPiece, i);
                             if (result.equals(TurnState.VALID)) {
                                 Global.setBoardState(Global.BoardState.THEIR_TURN);
-                                ((AIPlayer) enemyPlayer).nextMove();
+                                if (!Global.isNetworkGame())
+                                	((AIPlayer) enemyPlayer).nextMove();
+                               // else 
+                               // 	((NetworkPlayer) enemyPlayer).nextMove();
                             } else if (result.equals(TurnState.NO_MORE)) {
                                 Global.setBoardState(Global.BoardState.GAME_LOSS);
                             } else if (result.equals(TurnState.FLAG_CAPTURED)) {
@@ -254,6 +259,7 @@ public class Board implements Screen {
                     if (button.getBounds().contains(e.getPoint()) && button.isEnabled()) {
                         if (button.equals(readyButton)) {
                             if (!Global.isNetworkGame()) {
+                            	System.out.println("not network");
                                 enemyPlayer = new AIPlayer();
                                 addPieces(enemyPlayer.getSanitizedPieces());
                                 //Global.setBoardState(Global.BoardState.GAME_WON); //used for testing
@@ -261,7 +267,26 @@ public class Board implements Screen {
                             } else {
                                 //TODO tell the server we're ready to go
                                 enemyPlayer = new NetworkPlayer();
-                                Global.connectedServer.addCommand(Packets.P_SEND_PIECES + SaveLoad.getPiecesAsString());
+                                Global.getClient().sendPacketToServer(Packets.P_SEND_PIECES + Packets.P_SEPERATOR + SaveLoad.getPiecesAsString());
+                                Thread t = new Thread(new ConditionalSleep(25000) {
+                                	
+                                	public java.util.List<Piece> pieces = null; 
+									@Override
+									public boolean condition() {
+										// TODO Auto-generated method stub
+										return (pieces != null);
+									}
+
+									@Override
+									public void call() {
+										// TODO Auto-generated method stub
+										pieces = enemyPlayer.getSanitizedPieces();
+									}
+                                });
+                                t.start();
+                                if (enemyPlayer.getSanitizedPieces() != null)
+                                	addPieces(enemyPlayer.getSanitizedPieces());
+
                             }
 
                         } else if (button.equals(clearButton)) {
