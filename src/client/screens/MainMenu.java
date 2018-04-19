@@ -95,7 +95,7 @@ public class MainMenu implements Screen {
 
         // When vs player is clicked "searching for player" window appears
         if (button_pvp.equals(buttonPressed)) {
-
+        		int numberOfPlayersCurrentlyOnline = Global.getServer().getConnectedPlayers();
             MenuButton searchMenu = new MenuButton(searchStatus, 350, 375, 300, 200);
             g2d.setFont(new Font("Sans-Serif", Font.PLAIN, 15));
             g2d.setColor(blackTransparent);
@@ -110,7 +110,9 @@ public class MainMenu implements Screen {
 
             g2d.drawImage(Images.loadImage("closeicon"), closeButton.x, closeButton.y, closeButton.width,
                     closeButton.height, o);
-
+          
+            //Collaboration phase code
+            g2d.drawString("Connected players: " + numberOfPlayersCurrentlyOnline , 360, 565);
         }
 
     }
